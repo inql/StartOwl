@@ -1,6 +1,6 @@
 
-# Created by https://www.gitignore.io/api/elm,scala,intellij+all
-# Edit at https://www.gitignore.io/?templates=elm,scala,intellij+all
+# Created by https://www.gitignore.io/api/elm,scala,intellij+all,playframework
+# Edit at https://www.gitignore.io/?templates=elm,scala,intellij+all,playframework
 
 ### Elm ###
 # elm-package generated files
@@ -94,9 +94,27 @@ modules.xml
 # Sonarlint plugin
 .idea/sonarlint
 
+### PlayFramework ###
+# Ignore Play! working directory #
+bin/
+/db
+.eclipse
+/lib/
+/logs/
+/modules
+/project/project
+/project/target
+/target
+tmp/
+test-result
+server.pid
+*.eml
+/dist/
+.cache
+
 ### Scala ###
 *.class
 *.log
 
-# End of https://www.gitignore.io/api/elm,scala,intellij+all
+# End of https://www.gitignore.io/api/elm,scala,intellij+all,playframework
 
