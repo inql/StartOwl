@@ -1,7 +1,7 @@
 package com.startowl
 
 import akka.http.scaladsl.server.{Directives, Route}
-import com.startowl.repositories.SearchRequestRepository
+import com.startowl.repository.SearchRequestRepository
 
 trait Router {
 

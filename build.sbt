@@ -8,6 +8,7 @@ libraryDependencies ++= {
   val akkaVersion = "2.5.26"
   val akkaHttp = "10.1.10"
   val circeVersion = "0.12.3"
+  val akkaCors   = "0.4.1"
   Seq(
     "com.typesafe.akka" %% "akka-actor"      % akkaVersion,
     "com.typesafe.akka" %% "akka-http-core"  % akkaHttp,
@@ -23,6 +24,7 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttp,
+    "ch.megard"         %% "akka-http-cors"    % akkaCors,
     "de.heikoseeberger" %% "akka-http-circe" % "1.29.1"
   )
 }

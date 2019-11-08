@@ -1,6 +1,6 @@
-package com.startowl.repositories
+package com.startowl.repository
 
-import com.startowl.models.SearchRequest
+import com.startowl.model.SearchRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 
