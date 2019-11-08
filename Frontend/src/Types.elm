@@ -1,6 +1,8 @@
 module Types exposing (..)
 
 import Random
+import Time
+import Task
 
 type alias Record = {
     url : String,
@@ -28,14 +30,20 @@ type Item =
     | CustomClock Clock 
 
 
-sampleItem : Item
-sampleItem = Section sampleCategory
+sampleItemCategory : Item
+sampleItemCategory = Section sampleCategory
 
--- LATER
+sampleClock : Clock
+sampleClock =
+    Clock "Polska" Time.utc (Time.millisToPosix 0)
+
+sampleItemClock : Item
+sampleItemClock = CustomClock sampleClock
 
 
 type alias Clock = {
-    title : String,
-    zone : String
+    title : String
+    , zone : Time.Zone
+    , time : Time.Posix
     }
 
