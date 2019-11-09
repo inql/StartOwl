@@ -1,30 +1,34 @@
-name := "StartOwl-akka"
+name := "start-owl-api"
 
-version := "0.1"
+version := "1.0"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.12.4"
 
+scalaSource in Compile := baseDirectory.value / "src"
+resourceDirectory in Compile := baseDirectory.value / "conf"
+scalaSource in Test := baseDirectory.value / "test"
+scalaSource in IntegrationTest := baseDirectory.value / "it"
+
+
+val akkVersion = "2.5.9"
+val akkaHttpVersion = "10.0.11"
+val circeVersion = "0.9.3"
 libraryDependencies ++= {
-  val akkaVersion = "2.5.26"
-  val akkaHttp = "10.1.10"
-  val circeVersion = "0.12.3"
-  val akkaCors   = "0.4.1"
   Seq(
-    "com.typesafe.akka" %% "akka-actor"      % akkaVersion,
-    "com.typesafe.akka" %% "akka-http-core"  % akkaHttp,
-    "com.typesafe.akka" %% "akka-http"       % akkaHttp,
-    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-    "com.typesafe.play" %% "play-ws-standalone-json"       % "2.0.7",
-    "com.typesafe.akka" %% "akka-slf4j"      % akkaVersion,
-    "ch.qos.logback"    %  "logback-classic" % "1.2.3",
-    "de.heikoseeberger" %% "akka-http-play-json"   % "1.29.0",
-    "com.typesafe.akka" %% "akka-testkit"    % akkaVersion   % "test",
-    "org.scalatest"     %% "scalatest"       % "3.2.0-M1"       % "test",
+    "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+    "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
+    "org.scalatest" %% "scalatest" % "3.0.5" % "test, it",
+    "org.jsoup" % "jsoup" % "1.8.3",
+    "com.google.inject" % "guice" % "4.1.0",
+
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
-    "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttp,
-    "ch.megard"         %% "akka-http-cors"    % akkaCors,
-    "de.heikoseeberger" %% "akka-http-circe" % "1.29.1"
+    "de.heikoseeberger" %% "akka-http-circe" % "1.21.0"
   )
 }
+
+enablePlugins(JavaAppPackaging)
+
+lazy val root = (project in file(".")).configs(IntegrationTest).settings(Defaults.itSettings: _*)
