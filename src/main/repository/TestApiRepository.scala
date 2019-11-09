@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 trait TestApiRepository {
 
   def all(): Future[Seq[TestSearchResult]]
-  def byId(id: Long): Future[TestSearchResult]
+  def byTag(tag: String): Future[Seq[TestSearchResult]]
   def byName(name: String): Future[Seq[TestSearchResult]]
 }
 
@@ -19,25 +19,25 @@ object TestApiRepository {
 @Singleton
 class InMemoryTestApiRepository@Inject() extends TestApiRepository {
   val initialRecords = Seq(
-    TestSearchResult(1,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(2,"www.wp.pl","Tytuł 2","Opis 1"),
-    TestSearchResult(3,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(4,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(5,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(6,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(7,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(8,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(9,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(10,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(11,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(12,"www.wp.pl","Tytuł 1","Opis 1"),
-    TestSearchResult(13,"www.wp.pl","Tytuł 1","Opis 1")
+    TestSearchResult("sport","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("polityka","www.fajnastrona.pl","Tytuł 2","Opis 1"),
+    TestSearchResult("programowanie","www.onet.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("gry","www.mateusz.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("sport","www.markzukernber.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("test","www.dobrastarczy.pl","xsadasdasd 1","Opis 1"),
+    TestSearchResult("jedzenie","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("jedzenie","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("jedzenie","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("sport","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("gry","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("programowanie","www.wp.pl","Tytuł 1","Opis 1"),
+    TestSearchResult("programowanie","www.wp.pl","Tytuł 1","Opis 1")
   )
   private var testRecords = initialRecords.toVector
 
   override def all(): Future[Seq[TestSearchResult]] = Future.successful(testRecords)
 
-  override def byId(id: Long): Future[TestSearchResult] = Future.successful(testRecords.filter(_.id==id)(0))
+  override def byTag(tag: String): Future[Seq[TestSearchResult]] = Future.successful(testRecords.filter(_.tag.equals(tag)))
 
   override def byName(name: String): Future[Seq[TestSearchResult]] = Future.successful(testRecords.filter(_.title.equals(name)))
 }

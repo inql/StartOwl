@@ -37,9 +37,9 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository) extends Rou
             }
           }
         } ~
-        path(IntNumber){ (id) =>
+        path(Segment){ (tag : String) =>
           get {
-            handleWithGeneric(testApiRepository.byId(id)) { record =>
+            handleWithGeneric(testApiRepository.byTag(tag)) { record =>
               complete(record)
             }
           }
