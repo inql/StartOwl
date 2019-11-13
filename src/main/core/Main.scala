@@ -20,6 +20,7 @@ trait MainApp extends AkkaSystemUtils {
 
   def main(args: Array[String]): Unit = {
     Http().bindAndHandle(routes, appConfig.httpHost, appConfig.httpPort)
+    system.log.info(s"Server started: ${appConfig.appName} at ${appConfig.httpHost}:${appConfig.httpPort}")
   }
 }
 

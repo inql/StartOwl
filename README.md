@@ -3,10 +3,15 @@ Project Mateusz Małecki + Dawid Bińkuś
 ## Description
 TBD
 ## Usage
-TBD
+To run backend API, enter root directory of project and do:
+``
+sbt run
+``
+
+After that 
 ## Project Structure
 TBD
 ## Sources
-* [sbt-elm package](https://github.com/choucrifahed/sbt-elm)
-* [sbt-web package](https://github.com/sbt/sbt-web)
-* [playframework](https://github.com/playframework/playframework)
+* [scala-scraper](https://github.com/ruippeixotog/scala-scraper)
+* [Akka](https://akka.io/)
+* [Akka Quickstart](https://doc.akka.io/docs/akka/current/typed/guide/introduction.html?language=scala)

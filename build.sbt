@@ -10,7 +10,7 @@ scalaSource in Test := baseDirectory.value / "test"
 scalaSource in IntegrationTest := baseDirectory.value / "it"
 
 
-val akkVersion = "2.5.9"
+val akkaVersion = "2.5.9"
 val akkaHttpVersion = "10.0.11"
 val circeVersion = "0.9.3"
 libraryDependencies ++= {
@@ -21,7 +21,7 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % "3.0.5" % "test, it",
     "org.jsoup" % "jsoup" % "1.8.3",
     "com.google.inject" % "guice" % "4.1.0",
-
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "io.circe" %% "circe-core" % circeVersion,
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
