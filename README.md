@@ -4,11 +4,18 @@ Project Mateusz Małecki + Dawid Bińkuś
 TBD
 ## Usage
 To run backend API, enter root directory of project and do:
+
 ``
 sbt run
 ``
 
-After that 
+After that wait for the following output:
+
+``
+[INFO] [11/13/2019 22:51:25.463] [run-main-0] [akka.actor.ActorSystemImpl(actor-system)] Server started: start-owl-api at 0.0.0.0:8001
+``
+
+Configuration is stored in conf/application.conf file, where host IP address and port might be changed if needed.
 ## Project Structure
 TBD
 ## Sources
