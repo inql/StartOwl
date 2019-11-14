@@ -1,4 +1,4 @@
-package main.core
+package core
 
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
@@ -9,12 +9,14 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.PathMatchers.LongNumber
 import akka.routing.Router
 import com.google.inject.{Inject, Singleton}
-import main.directive.TestApiDirectives
-import main.model.DownstreamError
-import main.repository.{InMemoryTestApiRepository, TestApiRepository}
+import directive.TestApiDirectives
+import model.{DownstreamError, SearchRequest}
+import repository.{InMemoryTestApiRepository, TestApiRepository}
 
 import scala.util.{Failure, Success}
-import main.util.ImplicitJsonConversions._
+import util.ImplicitJsonConversions._
+
+import scala.concurrent.Future
 
 trait Router
 
@@ -29,21 +31,32 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository) extends Rou
             complete(OK)
           }
         } ~
-      pathPrefix("testresults"){
-        pathEndOrSingleSlash{
+      pathPrefix("testresults") {
+        pathEndOrSingleSlash {
           get {
             handleWithGeneric(testApiRepository.all()) { record =>
               complete(record)
             }
           }
         } ~
-        path(Segment){ (tag : String) =>
-          get {
-            handleWithGeneric(testApiRepository.byTag(tag)) { record =>
-              complete(record)
+          path(Segment) { (tag: String) =>
+            get {
+              handleWithGeneric(testApiRepository.byTag(tag)) { record =>
+                complete(record)
+              }
             }
           }
+      } ~
+      pathPrefix("searchrequest"){
+        get{
+          complete(OK)
         }
+        //todo: end it please
+//        post{
+//          entity(as[SearchRequest]){ ed =>
+//            onSuccess(Future[SearchRequest]())
+//          }
+//        }
       }
     }
 }

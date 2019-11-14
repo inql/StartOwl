@@ -1,4 +1,4 @@
-package main.core
+package core
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -8,9 +8,9 @@ import akka.http.scaladsl.server.RouteResult.route2HandlerFlow
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import com.google.inject.{AbstractModule, Guice, Injector}
-import main.model.TestSearchResult
-import main.repository.{InMemoryTestApiRepository, TestApiRepository}
-import main.util.AkkaSystemUtils
+import model.TestSearchResult
+import repository.{InMemoryTestApiRepository, TestApiRepository}
+import util.AkkaSystemUtils
 
 trait MainApp extends AkkaSystemUtils {
   import system.dispatcher

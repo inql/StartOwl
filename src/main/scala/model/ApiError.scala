@@ -1,4 +1,4 @@
-package main.model
+package model
 
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 

@@ -1,7 +1,7 @@
-package main.repository
+package repository
 
 import javax.inject.{Inject, Singleton}
-import main.model.{SearchResult, TestSearchResult}
+import model.TestSearchResult
 
 import scala.concurrent.{ExecutionContext, Future}
 

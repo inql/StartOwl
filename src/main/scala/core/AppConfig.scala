@@ -1,4 +1,4 @@
-package main.core
+package core
 
 import com.typesafe.config.{Config, ConfigFactory}
 

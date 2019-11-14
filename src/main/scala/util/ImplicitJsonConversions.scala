@@ -1,7 +1,7 @@
-package main.util
+package util
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import main.model.{DownstreamError, SearchResult}
+import model.{DownstreamError, SearchResult}
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 object ImplicitJsonConversions extends DefaultJsonProtocol with SprayJsonSupport{
