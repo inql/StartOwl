@@ -52,11 +52,14 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository) extends Rou
           complete(OK)
         }
         //todo: end it please
-//        post{
-//          entity(as[SearchRequest]){ ed =>
-//            onSuccess(Future[SearchRequest]())
-//          }
-//        }
+        parameters('domain,'tag.*) { (domain, tags) =>
+          tags.toList match {
+            case Nil => complete(s"Received query from domain ${domain} without any tags")
+            case tag :: Nil => complete(s"Received query from domain ${domain} with only one tag: ${tag}")
+            case multiple => complete(s"Received query from domain ${domain} with multiple tags: ${multiple.mkString(", ")}")
+          }
+
+        }
       }
     }
 }
