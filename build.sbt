@@ -28,6 +28,7 @@ libraryDependencies ++= {
     "de.heikoseeberger" %% "akka-http-circe" % "1.21.0"
   )
 }
+libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "2.2.0"
 
 enablePlugins(JavaAppPackaging)
 
