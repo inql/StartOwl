@@ -1,5 +1,6 @@
 module SiteItems.Categories exposing (..)
 
+import Api.ApiRecords exposing (..)
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
@@ -14,17 +15,15 @@ import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
+import Http
+import Json.Decode exposing (Decoder, field, list, map2, string)
+import SiteItems.Record exposing (..)
 
 
-type alias Record =
-    { url : String
-    , title : String
-    }
-
-
-sampleRecord : Record
-sampleRecord =
-    Record "https://guide.elm-lang.org/types/type_aliases.html" "Custom Title"
+type Status
+    = Loading
+    | Error
+    | Good
 
 
 type alias Category =
@@ -32,12 +31,13 @@ type alias Category =
     , name : String
     , tags : List String
     , records : List Record
+    , status : Status
     }
 
 
 sampleCategory : Category
 sampleCategory =
-    Category 1 "Sample name" (List.repeat 2 "Tag") (List.repeat 5 sampleRecord)
+    Category 1 "Sample name" (List.repeat 2 "Tag") (List.repeat 5 sampleRecord) Good
 
 
 type alias Model =
@@ -46,6 +46,7 @@ type alias Model =
 
 type Msg
     = LoadMoreRecords
+    | GotResult (Result Http.Error (List Record))
 
 
 init : Int -> Category
@@ -53,11 +54,44 @@ init i =
     sampleCategory
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadMoreRecords ->
-            { model | records = model.records ++ [ sampleRecord ] }
+            ( { model | status = Loading }, loadResults )
+
+        GotResult result ->
+            case result of
+                Ok r ->
+                    ( { model | records = model.records ++ r, status = Good }, Cmd.none )
+
+                Err _ ->
+                    ( { model | records = model.records ++ [ sampleRecord ], status = Error }, Cmd.none )
+
+
+loadResults : Cmd Msg
+loadResults =
+    Http.get
+        { url = "http://localhost:5016/data.json"
+        , expect = Http.expectJson GotResult recordsDecoder
+        }
+
+
+recordsDecoder : Decoder (List Record)
+recordsDecoder =
+    field "records" (list decodeRecord)
+
+
+decodeRecord : Decoder Record
+decodeRecord =
+    map2 Record
+        (field "url"
+            string
+        )
+        (field
+            "title"
+            string
+        )
 
 
 view : Model -> Html Msg
@@ -76,7 +110,8 @@ displayCategory category =
             , Block.custom <| Card.columns (listOfRecords category.records)
             ]
         |> Card.footer []
-            [ text "Updated"
+            [ text (statusToString category.status)
+            , br [] []
             , Button.button
                 [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
                 [ text "Load more" ]
@@ -99,3 +134,16 @@ displayRecord record =
             [ Block.text [] [ text record.url ]
             , Block.link [ href record.url ] [ text record.url ]
             ]
+
+
+statusToString : Status -> String
+statusToString status =
+    case status of
+        Loading ->
+            "Loading"
+
+        Error ->
+            "Error"
+
+        Good ->
+            "Good"

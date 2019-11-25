@@ -51,11 +51,11 @@ subscriptions model =
         |> Sub.batch
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         CategoryMsg id message ->
-            model
+            ( model
                 |> List.map
                     (\x ->
                         case x of
@@ -64,14 +64,16 @@ update msg model =
 
                             Section cat ->
                                 if cat.id == id then
-                                    Section (SiteItems.Categories.update message cat)
+                                    Section (Tuple.first (SiteItems.Categories.update message cat))
 
                                 else
                                     Section cat
                     )
+            , Cmd.none
+            )
 
         ClockMsg id message ->
-            model
+            ( model
                 |> List.map
                     (\x ->
                         case x of
@@ -81,9 +83,11 @@ update msg model =
                             Section cat ->
                                 Section cat
                     )
+            , Cmd.none
+            )
 
         ClockSubsMsg message ->
-            model
+            ( model
                 |> List.map
                     (\x ->
                         case x of
@@ -93,6 +97,8 @@ update msg model =
                             Section cat ->
                                 Section cat
                     )
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg

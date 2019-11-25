@@ -56,7 +56,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateItems m ->
-            ( { model | items = SiteItems.Items.update m model.items }, Cmd.none )
+            let
+                ( updatedItems, givenCoomand ) =
+                    SiteItems.Items.update m model.items
+            in
+            ( { model | items = updatedItems }, Cmd.map UpdateItems givenCoomand )
 
 
 view : Model -> Html Msg
