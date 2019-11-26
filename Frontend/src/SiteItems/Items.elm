@@ -31,9 +31,9 @@ type alias Model =
     List Item
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    List.repeat 2 sampleItemCategory ++ [ sampleItemClock ]
+    ( List.repeat 2 sampleItemCategory ++ [ sampleItemClock ], Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

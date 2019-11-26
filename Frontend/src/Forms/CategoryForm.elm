@@ -29,9 +29,9 @@ type Msg
     | SubmitForm
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    Model "" (Tags [ "music" ])
+    ( Model "" (Tags [ "music" ]), Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

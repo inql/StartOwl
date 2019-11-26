@@ -40,8 +40,15 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "Dave" SiteItems.Items.init Forms.CategoryForm.init
-    , Cmd.none
+    let
+        ( items, itemsCmd ) =
+            SiteItems.Items.init
+
+        ( form, formCmd ) =
+            Forms.CategoryForm.init
+    in
+    ( Model "Dave" items form
+    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd ]
     )
 
 
