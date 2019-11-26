@@ -10,6 +10,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
+import Forms.CategoryForm
 import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
@@ -24,6 +25,7 @@ import Time
 type alias Model =
     { name : String
     , items : SiteItems.Items.Model
+    , categoryForm : Forms.CategoryForm.Model
     }
 
 
@@ -38,13 +40,14 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "Dave" SiteItems.Items.init
+    ( Model "Dave" SiteItems.Items.init Forms.CategoryForm.init
     , Cmd.none
     )
 
 
 type Msg
     = UpdateItems SiteItems.Items.Msg
+    | CategoryFormMsg Forms.CategoryForm.Msg
 
 
 subscriptions : Model -> Sub Msg
@@ -57,10 +60,17 @@ update msg model =
     case msg of
         UpdateItems m ->
             let
-                ( updatedItems, givenCoomand ) =
+                ( updatedItems, givenCommand ) =
                     SiteItems.Items.update m model.items
             in
-            ( { model | items = updatedItems }, Cmd.map UpdateItems givenCoomand )
+            ( { model | items = updatedItems }, Cmd.map UpdateItems givenCommand )
+
+        CategoryFormMsg m ->
+            let
+                ( updatedForm, givenCommand ) =
+                    Forms.CategoryForm.update m model.categoryForm
+            in
+            ( { model | categoryForm = updatedForm }, Cmd.map CategoryFormMsg givenCommand )
 
 
 view : Model -> Html Msg
@@ -74,15 +84,9 @@ view model =
                 ]
             ]
         , Html.map UpdateItems (SiteItems.Items.view model.items)
-        , addOthers
+        , Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
         , addFooter
         ]
-
-
-addOthers : Html Msg
-addOthers =
-    div []
-        []
 
 
 addFooter : Html Msg

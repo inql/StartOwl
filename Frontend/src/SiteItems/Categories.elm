@@ -22,7 +22,7 @@ import SiteItems.Record exposing (..)
 
 type Status
     = Loading
-    | Error
+    | Error Http.Error
     | Good
 
 
@@ -37,7 +37,7 @@ type alias Category =
 
 sampleCategory : Category
 sampleCategory =
-    Category 1 "Sample name" (List.repeat 2 "Tag") (List.repeat 5 sampleRecord) Good
+    Category 1 "Sample name" (List.repeat 2 "Tag") (List.repeat 2 sampleRecord) Good
 
 
 type alias Model =
@@ -65,8 +65,8 @@ update msg model =
                 Ok r ->
                     ( { model | records = model.records ++ r, status = Good }, Cmd.none )
 
-                Err _ ->
-                    ( { model | records = model.records ++ [ sampleRecord ], status = Error }, Cmd.none )
+                Err err ->
+                    ( { model | status = Error err }, Cmd.none )
 
 
 loadResults : Cmd Msg
@@ -142,8 +142,8 @@ statusToString status =
         Loading ->
             "Loading"
 
-        Error ->
-            "Error"
+        Error err ->
+            Helpers.errorToString err
 
         Good ->
             "Good"

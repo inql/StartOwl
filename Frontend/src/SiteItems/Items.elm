@@ -55,6 +55,31 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         CategoryMsg id message ->
+            let
+                searchedMaybeItem =
+                    model
+                        |> filterCategories
+                        |> List.filter
+                            (\x ->
+                                if x.id == id then
+                                    True
+
+                                else
+                                    False
+                            )
+                        |> List.head
+
+                searchedItem =
+                    case searchedMaybeItem of
+                        Just cat ->
+                            cat
+
+                        Nothing ->
+                            sampleCategory
+
+                ( updatedItem, cmdMsg ) =
+                    SiteItems.Categories.update message searchedItem
+            in
             ( model
                 |> List.map
                     (\x ->
@@ -64,12 +89,12 @@ update msg model =
 
                             Section cat ->
                                 if cat.id == id then
-                                    Section (Tuple.first (SiteItems.Categories.update message cat))
+                                    Section updatedItem
 
                                 else
                                     Section cat
                     )
-            , Cmd.none
+            , Cmd.map (CategoryMsg id) cmdMsg
             )
 
         ClockMsg id message ->
@@ -98,6 +123,20 @@ update msg model =
                                 Section cat
                     )
             , Cmd.none
+            )
+
+
+filterCategories : List Item -> List Category
+filterCategories items =
+    items
+        |> List.filterMap
+            (\x ->
+                case x of
+                    Section cat ->
+                        Just cat
+
+                    CustomClock c ->
+                        Nothing
             )
 
 
