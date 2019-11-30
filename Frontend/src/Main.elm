@@ -55,6 +55,7 @@ init _ =
 type Msg
     = UpdateItems SiteItems.Items.Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
+    | CreatedNewCategory Item
 
 
 subscriptions : Model -> Sub Msg
@@ -74,10 +75,21 @@ update msg model =
 
         CategoryFormMsg m ->
             let
-                ( updatedForm, givenCommand ) =
+                ( updatedForm, givenCommand, possibleNewCommand ) =
                     Forms.CategoryForm.update m model.categoryForm
+
+                newItems =
+                    case possibleNewCommand of
+                        Just cat ->
+                            model.items ++ [ Section cat ]
+
+                        Nothing ->
+                            model.items
             in
-            ( { model | categoryForm = updatedForm }, Cmd.map CategoryFormMsg givenCommand )
+            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.map CategoryFormMsg givenCommand )
+
+        CreatedNewCategory item ->
+            ( { model | items = model.items ++ [ item ] }, Cmd.none )
 
 
 view : Model -> Html Msg

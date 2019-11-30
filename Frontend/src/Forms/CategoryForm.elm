@@ -16,32 +16,47 @@ import SiteItems.Categories exposing (..)
 
 
 type alias Tags =
-    { items : List String
-    }
+    List String
 
 
 type alias Model =
-    { title : String, tags : Tags }
+    { title : String
+    , tags : Tags
+    , currentTag : String
+    }
 
 
 type Msg
     = UpdateTitle String
+    | UpdateTag String
+    | AddTag
     | SubmitForm
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" (Tags [ "music" ]), Cmd.none )
+    ( Model "" [] "", Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe Category )
 update msg model =
     case msg of
         UpdateTitle newTitle ->
-            ( { model | title = newTitle }, Cmd.none )
+            ( { model | title = newTitle }, Cmd.none, Nothing )
+
+        AddTag ->
+            ( { model | tags = model.tags ++ [ model.currentTag ], currentTag = "" }, Cmd.none, Nothing )
+
+        UpdateTag newTagVal ->
+            ( { model | currentTag = newTagVal }, Cmd.none, Nothing )
 
         SubmitForm ->
-            ( model, Cmd.none )
+            ( { model | title = "", tags = [] }, Cmd.none, Just (createNewCategory model) )
+
+
+createNewCategory : Model -> Category
+createNewCategory model =
+    Category (model.title |> String.length) model.title model.tags [] Loading
 
 
 view : Model -> Html Msg
@@ -54,9 +69,19 @@ displayForm model =
     div []
         [ input [ placeholder "title", value model.title, onInput UpdateTitle ] []
         , br [] []
-        , text "tagi tagi tagi tagi"
+        , model.tags |> List.map (\x -> text (x ++ ", ")) |> div []
+        , br [] []
+        , input [ placeholder "tag value", value model.currentTag, onInput UpdateTag ] []
+        , br [] []
+        , Button.button
+            [ Button.secondary, Button.attrs [ onClick AddTag ] ]
+            [ text "Add tag" ]
         , br [] []
         , Button.button
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
-            [ text "Load more" ]
+            [ text "Submit" ]
         ]
+
+
+
+-- TO DO VALIDATION

@@ -16,7 +16,6 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, field, list, map2, string)
 import SiteItems.Record exposing (..)
 
 
@@ -35,9 +34,9 @@ type alias Category =
     }
 
 
-sampleCategory : Category
-sampleCategory =
-    Category 1 "Sample name" (List.repeat 2 "Tag") (List.repeat 2 sampleRecord) Good
+sampleCategory : Int -> Category
+sampleCategory id =
+    Category id "Sample name" (List.repeat 2 "Tag") (List.repeat 2 sampleRecord) Good
 
 
 type alias Model =
@@ -49,9 +48,9 @@ type Msg
     | GotResult (Result Http.Error (List Record))
 
 
-init : Int -> Category
+init : Int -> ( Category, Cmd Msg )
 init i =
-    sampleCategory
+    ( sampleCategory i, loadResults )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -72,26 +71,9 @@ update msg model =
 loadResults : Cmd Msg
 loadResults =
     Http.get
-        { url = "http://localhost:5016/data.json"
+        { url = api_url
         , expect = Http.expectJson GotResult recordsDecoder
         }
-
-
-recordsDecoder : Decoder (List Record)
-recordsDecoder =
-    field "records" (list decodeRecord)
-
-
-decodeRecord : Decoder Record
-decodeRecord =
-    map2 Record
-        (field "url"
-            string
-        )
-        (field
-            "title"
-            string
-        )
 
 
 view : Model -> Html Msg

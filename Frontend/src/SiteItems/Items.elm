@@ -11,11 +11,6 @@ type Item
     | CustomClock Clock
 
 
-sampleItemCategory : Item
-sampleItemCategory =
-    Section (SiteItems.Categories.init 1)
-
-
 sampleItemClock : Item
 sampleItemClock =
     CustomClock (Tuple.first (SiteItems.Clocks.init 0))
@@ -33,7 +28,13 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( List.repeat 2 sampleItemCategory ++ [ sampleItemClock ], Cmd.none )
+    let
+        ( sampleItemCategory, catCmd ) =
+            SiteItems.Categories.init 1
+    in
+    ( [ Section sampleItemCategory ] ++ [ sampleItemClock ]
+    , Cmd.batch [ Cmd.map (CategoryMsg 1) catCmd ]
+    )
 
 
 subscriptions : Model -> Sub Msg
@@ -75,7 +76,7 @@ update msg model =
                             cat
 
                         Nothing ->
-                            sampleCategory
+                            sampleCategory -1
 
                 ( updatedItem, cmdMsg ) =
                     SiteItems.Categories.update message searchedItem
@@ -158,7 +159,3 @@ displayItem item =
 
         CustomClock clock ->
             Html.map (ClockMsg clock.id) (SiteItems.Clocks.view clock)
-
-
-
--- TO DO
