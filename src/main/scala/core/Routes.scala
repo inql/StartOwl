@@ -12,6 +12,7 @@ import com.google.inject.{Inject, Singleton}
 import directive.TestApiDirectives
 import model.{DownstreamError, SearchRequest}
 import repository.{InMemoryTestApiRepository, TestApiRepository}
+import service.{WebScraperService}
 
 import scala.util.{Failure, Success}
 import util.ImplicitJsonConversions._
@@ -21,7 +22,7 @@ import scala.concurrent.Future
 trait Router
 
 @Singleton
-class Routes @Inject()(testApiRepository: InMemoryTestApiRepository) extends Router with TestApiDirectives{
+class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, webScrapperService: WebScraperService) extends Router with TestApiDirectives{
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
@@ -48,17 +49,15 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository) extends Rou
           }
       } ~
       pathPrefix("searchrequest"){
-        get{
-          complete(OK)
-        }
-        //todo: end it please
         parameters('domain,'tag.*) { (domain, tags) =>
-          tags.toList match {
-            case Nil => complete(s"Received query from domain ${domain} without any tags")
-            case tag :: Nil => complete(s"Received query from domain ${domain} with only one tag: ${tag}")
-            case multiple => complete(s"Received query from domain ${domain} with multiple tags: ${multiple.mkString(", ")}")
+//          tags.toList match {
+//            case Nil => complete(s"Received query from domain ${domain} without any tags")
+//            case tag :: Nil => complete(s"Received query from domain ${domain} with only one tag: ${tag}")
+//            case multiple => complete(s"Received query from domain ${domain} with multiple tags: ${multiple.mkString(", ")}")
+//          }
+          handleWithGeneric(webScrapperService.search(SearchRequest(domain,tags.toList))) { record =>
+            complete(record)
           }
-
         }
       }
     }
