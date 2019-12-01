@@ -26,7 +26,8 @@ libraryDependencies ++= {
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
     "de.heikoseeberger" %% "akka-http-circe" % "1.21.0",
-    "ch.megard" %% "akka-http-cors" % "0.4.2"
+    "ch.megard" %% "akka-http-cors" % "0.4.2",
+    "com.rometools" % "rome" % "1.8.1"
   )
 }
 libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "2.2.0"

@@ -63,13 +63,13 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, webScrapper
           } ~
           pathPrefix("searchrequest"){
             parameters('domain,'tag.*) { (domain, tags) =>
-              //          tags.toList match {
-              //            case Nil => complete(s"Received query from domain ${domain} without any tags")
-              //            case tag :: Nil => complete(s"Received query from domain ${domain} with only one tag: ${tag}")
-              //            case multiple => complete(s"Received query from domain ${domain} with multiple tags: ${multiple.mkString(", ")}")
-              //          }
               handleWithGeneric(webScrapperService.search(SearchRequest(domain,tags.toList))) { record =>
                 complete(record)
+              }
+            }
+            post {
+              entity(as[SearchRequest]) { searchRequest =>
+                complete(searchRequest)
               }
             }
           }
