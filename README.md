@@ -3,10 +3,22 @@ Project Mateusz Małecki + Dawid Bińkuś
 ## Description
 TBD
 ## Usage
-TBD
+To run backend API, enter root directory of project and do:
+
+``
+sbt run
+``
+
+After that wait for the following output:
+
+``
+[INFO] [11/13/2019 22:51:25.463] [run-main-0] [akka.actor.ActorSystemImpl(actor-system)] Server started: start-owl-api at 0.0.0.0:8001
+``
+
+Configuration is stored in conf/application.conf file, where host IP address and port might be changed if needed.
 ## Project Structure
 TBD
 ## Sources
-* [sbt-elm package](https://github.com/choucrifahed/sbt-elm)
-* [sbt-web package](https://github.com/sbt/sbt-web)
-* [playframework](https://github.com/playframework/playframework)
+* [scala-scraper](https://github.com/ruippeixotog/scala-scraper)
+* [Akka](https://akka.io/)
+* [Akka Quickstart](https://doc.akka.io/docs/akka/current/typed/guide/introduction.html?language=scala)

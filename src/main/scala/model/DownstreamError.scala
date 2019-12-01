@@ -1,3 +1,3 @@
-package main.model
+package model
 
 case class DownstreamError(errorMessage: String)

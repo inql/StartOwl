@@ -1,8 +1,8 @@
-package main.directive
+package directive
 
 import scala.util.{Failure, Success}
 import akka.http.scaladsl.server.{Directive1, Directives}
-import main.model.ApiError
+import model.ApiError
 
 import scala.concurrent.Future
 

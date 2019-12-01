@@ -1,4 +1,4 @@
-package main.util
+package util
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
