@@ -1,5 +1,6 @@
 package core
 
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, Route}
 import akka.http.scaladsl.server.RouteConcatenation._enhanceRouteWithConcatenation
@@ -8,25 +9,34 @@ import akka.http.scaladsl.model.StatusCodes.{OK, ServiceUnavailable}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.PathMatchers.LongNumber
 import akka.routing.Router
+import akka.util.Timeout
 import com.google.inject.{Inject, Singleton}
 import directive.TestApiDirectives
-import model.{DownstreamError, SearchRequest}
+import model.{ApiSearchResult, DownstreamError, SearchRequest}
 import repository.{InMemoryTestApiRepository, TestApiRepository}
-import service.WebScraperService
+import service.AtomAndRssService
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import util.AkkaSystemUtils
+import java.util.concurrent.TimeUnit
 
 import scala.util.{Failure, Success}
 import util.ImplicitJsonConversions._
+import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+import org.joda.time.Seconds
 
-import scala.concurrent.Future
+import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.{Await, Future}
 
 trait Router
 
 @Singleton
-class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, webScrapperService: WebScraperService) extends Router with TestApiDirectives{
+class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, atomAndRssService: AtomAndRssService) extends AkkaSystemUtils with TestApiDirectives{
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
   import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+
   // Your rejection handler
   val rejectionHandler = corsRejectionHandler.withFallback(RejectionHandler.default)
 
@@ -62,14 +72,11 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, webScrapper
               }
           } ~
           pathPrefix("searchrequest"){
-            parameters('domain,'tag.*) { (domain, tags) =>
-              //          tags.toList match {
-              //            case Nil => complete(s"Received query from domain ${domain} without any tags")
-              //            case tag :: Nil => complete(s"Received query from domain ${domain} with only one tag: ${tag}")
-              //            case multiple => complete(s"Received query from domain ${domain} with multiple tags: ${multiple.mkString(", ")}")
-              //          }
-              handleWithGeneric(webScrapperService.search(SearchRequest(domain,tags.toList))) { record =>
-                complete(record)
+            post {
+              entity(as[SearchRequest]) { searchRequest =>
+                handleWithGeneric(atomAndRssService.search(searchRequest)) { record =>
+                  complete(record)
+                }
               }
             }
           }
