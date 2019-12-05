@@ -35,7 +35,8 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
       case Nil => result
       case keyword :: rest => getAllResultsFromKeyword(
         rest, allEntries,
-        (for (element <- allEntries.filter(_.toString.contains(keyword))) yield ApiSearchResult(element.getUri,element.getTitle,element.getDescription.getValue,element.getEnclosures.get(0).getUrl,element.getLink)) ++ result)
+        (for (element <- allEntries.filter(_.toString.contains(keyword)))
+          yield ApiSearchResult(element.getUri,element.getTitle,element.getDescription.getValue,element.getEnclosures.get(0).getUrl,element.getLink,element.getPublishedDate.getTime)) ++ result)
     }
     system.log.info(s"This is all entries: ${allEntries.toString()}")
     Map("results" -> getAllResultsFromKeyword(keywords,allEntries,Seq()))

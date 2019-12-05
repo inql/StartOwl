@@ -14,7 +14,7 @@ import com.google.inject.{Inject, Singleton}
 import directive.TestApiDirectives
 import model.{ApiSearchResult, DownstreamError, SearchRequest}
 import repository.{InMemoryTestApiRepository, TestApiRepository}
-import service.{AtomAndRssService, WebScraperService}
+import service.AtomAndRssService
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import util.AkkaSystemUtils
 import java.util.concurrent.TimeUnit
@@ -72,11 +72,6 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, atomAndRssS
               }
           } ~
           pathPrefix("searchrequest"){
-//            parameters('domain,'tag.*) { (domain, tags) =>
-//              handleWithGeneric(webScrapperService.search(SearchRequest(domain,tags.toList))) { record =>
-//                complete(record)
-//              }
-//            }
             post {
               entity(as[SearchRequest]) { searchRequest =>
                 handleWithGeneric(atomAndRssService.search(searchRequest)) { record =>
