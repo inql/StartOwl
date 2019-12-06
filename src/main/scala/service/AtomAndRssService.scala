@@ -16,9 +16,7 @@ import scala.concurrent.Future
 import scala.util.matching.Regex
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
-
-  val browser = JsoupBrowser()
-
+  
   def search(query: SearchRequest): Future[Map[String, Seq[ApiSearchResult]]] = {
     system.log.info(s"Received request to get data from: ${query}")
     //todo: for now it only gives the title to given result
