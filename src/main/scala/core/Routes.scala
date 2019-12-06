@@ -29,8 +29,6 @@ import org.joda.time.Seconds
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
-trait Router
-
 @Singleton
 class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, atomAndRssService: AtomAndRssService) extends AkkaSystemUtils with TestApiDirectives{
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
