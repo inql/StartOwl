@@ -4,7 +4,7 @@ import javax.inject.Inject
 import model.{ApiSearchResult, SearchRequest}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import util.AkkaSystemUtils
-import java.net.URL
+import java.net.{MalformedURLException, URL}
 
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
 import com.rometools.rome.io.SyndFeedInput
@@ -20,12 +20,19 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
   def search(query: SearchRequest): Future[Map[String, Seq[ApiSearchResult]]] = {
     system.log.info(s"Received request to get data from: ${query}")
     //todo: for now it only gives the title to given result
-    val feedUrl = new URL(query.domain)
-    val input = new SyndFeedInput
-    val feed: SyndFeed = input.build(new XmlReader(feedUrl))
-    val entries = asScalaBuffer(feed.getEntries).toVector
-
-    Future.successful(getAllResults(query.keyword,entries))
+    try{
+      val feedUrl = new URL(query.domain)
+      val input = new SyndFeedInput
+      val feed: SyndFeed = input.build(new XmlReader(feedUrl))
+      val entries = asScalaBuffer(feed.getEntries).toVector
+      Future.successful(getAllResults(query.keyword,entries))
+    }
+    catch {
+      case x: MalformedURLException => {
+        system.log.error("Given URL is not correct!")
+        Future.failed(x)
+      }
+    }
   }
 
   def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): Map[String,Seq[ApiSearchResult]] = {
