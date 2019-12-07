@@ -9,6 +9,7 @@ import java.net.{MalformedURLException, URL}
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
+import util.TypesDef.MappedResult
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -16,10 +17,9 @@ import scala.concurrent.Future
 import scala.util.matching.Regex
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
-  
-  def search(query: SearchRequest): Future[Map[String, Seq[ApiSearchResult]]] = {
+
+  def search(query: SearchRequest): Future[MappedResult] = {
     system.log.info(s"Received request to get data from: ${query}")
-    //todo: for now it only gives the title to given result
     try{
       val feedUrl = new URL(query.domain)
       val input = new SyndFeedInput
@@ -35,7 +35,7 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
     }
   }
 
-  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): Map[String,Seq[ApiSearchResult]] = {
+  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): MappedResult = {
     @tailrec
     def getAllResultsFromKeyword(keywords: List[String], allEntries: Vector[SyndEntry], result: Seq[ApiSearchResult]): Seq[ApiSearchResult] = keywords match {
       case Nil => result
