@@ -30,7 +30,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
 @Singleton
-class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, atomAndRssService: AtomAndRssService) extends AkkaSystemUtils with TestApiDirectives{
+class Routes @Inject()(atomAndRssService: AtomAndRssService) extends AkkaSystemUtils with TestApiDirectives{
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
   import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
@@ -53,22 +53,6 @@ class Routes @Inject()(testApiRepository: InMemoryTestApiRepository, atomAndRssS
             complete(OK)
           }
         } ~
-          pathPrefix("testresults") {
-            pathEndOrSingleSlash {
-              get {
-                handleWithGeneric(testApiRepository.all()) { record =>
-                  complete(record)
-                }
-              }
-            } ~
-              path(Segment) { (tag: String) =>
-                get {
-                  handleWithGeneric(testApiRepository.byTag(tag)) { record =>
-                    complete(record)
-                  }
-                }
-              }
-          } ~
           pathPrefix("searchrequest"){
             post {
               entity(as[SearchRequest]) { searchRequest =>

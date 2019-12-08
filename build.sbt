@@ -9,7 +9,7 @@ resourceDirectory in Compile := baseDirectory.value / "conf"
 scalaSource in Test := baseDirectory.value / "src/test/scala/"
 scalaSource in IntegrationTest := baseDirectory.value / "it"
 
-
+resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
 val akkaVersion = "2.5.23"
 val akkaHttpVersion = "10.1.10"
 val circeVersion = "0.9.3"
@@ -20,7 +20,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-parsing" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
-    "org.scalatest" %% "scalatest" % "3.0.5" % "test, it",
+    "org.scalactic" %% "scalactic" % "3.1.0",
+    "org.scalatest" %% "scalatest" % "3.0.4" % "test, it",
     "org.jsoup" % "jsoup" % "1.8.3",
     "com.google.inject" % "guice" % "4.1.0",
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -34,7 +35,8 @@ libraryDependencies ++= {
     "com.rometools" % "rome" % "1.8.1",
     "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
     "net.ruippeixotog" %% "scala-scraper" % "2.2.0",
-    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.26" % Test
+    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.26" % Test,
+    "org.scalamock" %% "scalamock" % "4.4.0" % Test
   )
 }
 
