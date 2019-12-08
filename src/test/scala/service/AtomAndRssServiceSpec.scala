@@ -11,7 +11,7 @@ import scala.concurrent.Future
 
 class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
 
-  var emptyRequest, wrongUrlRequest, noTagsRequest, correctRequest, multipleTagsRequest, nullUrlRequest: SearchRequest = _
+  var emptyRequest, wrongUrlRequest, noTagsRequest, correctRequest, multipleTagsRequest, nullUrlRequest, nullTagsRequest: SearchRequest = _
   var rssPolsatXml, rssTvnXml, rssEmptyXml, rssWrongXml: Option[String] = _
   var atomAndRssService: AtomAndRssService = _
 
@@ -26,6 +26,7 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
     noTagsRequest = SearchRequest(rssTvnXml,List())
 
     nullUrlRequest = SearchRequest(None)
+    nullTagsRequest = SearchRequest(rssTvnXml, null)
 
     atomAndRssService = new AtomAndRssService
   }
@@ -61,6 +62,13 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
       val f: Future[MappedResult] = atomAndRssService.search(noTagsRequest)
       whenReady(f) { s => s shouldBe a [MappedResult]}
     }
+
+    "provide an empty result when no tags are given" in {
+      val f: Future[MappedResult] = atomAndRssService.search(noTagsRequest)
+      whenReady(f) { s => s.get("results") shouldBe empty}
+    }
+
+
   }
 
 
