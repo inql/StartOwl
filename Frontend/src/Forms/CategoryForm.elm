@@ -48,7 +48,7 @@ update msg model =
             ( { model | tags = model.tags ++ [ model.currentTag ], currentTag = "" }, Cmd.none, Nothing )
 
         UpdateTag newTagVal ->
-            ( { model | currentTag = newTagVal }, Cmd.none, Nothing )
+            ( { model | currentTag = String.toUpper newTagVal }, Cmd.none, Nothing )
 
         SubmitForm ->
             ( { model | title = "", tags = [] }, Cmd.none, Just (createNewCategory model) )

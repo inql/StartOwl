@@ -86,7 +86,7 @@ update msg model =
                         Nothing ->
                             model.items
             in
-            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.map CategoryFormMsg givenCommand )
+            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand ] )
 
         CreatedNewCategory item ->
             ( { model | items = model.items ++ [ item ] }, Cmd.none )

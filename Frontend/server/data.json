@@ -1,12 +1,16 @@
 {
     "records" : [
         {
-            "url" : "https://elmprogramming.com/decoding-json-part-1.html",
+            "url" : "https://elmprogramming.com/",
             "title" : "Elm programming"
         },
         {
             "url" : "https://google.com",
             "title" : "Google"
+        },
+        {
+            "url" : "https://wp.pl",
+            "title" : "WP"
         }
     ]
 }

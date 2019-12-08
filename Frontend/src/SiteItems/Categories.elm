@@ -23,6 +23,7 @@ type Status
     = Loading
     | Error Http.Error
     | Good
+    | NoMoreResults
 
 
 type alias Category =
@@ -36,7 +37,7 @@ type alias Category =
 
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" (List.repeat 2 "Tag") (List.repeat 2 sampleRecord) Good
+    Category id "Sample name" [] [] Good
 
 
 type alias Model =
@@ -50,28 +51,34 @@ type Msg
 
 init : Int -> ( Category, Cmd Msg )
 init i =
-    ( sampleCategory i, loadResults )
+    ( sampleCategory i, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadMoreRecords ->
-            ( { model | status = Loading }, loadResults )
+            ( { model | status = Loading }, loadResults model )
 
         GotResult result ->
             case result of
                 Ok r ->
-                    ( { model | records = model.records ++ r, status = Good }, Cmd.none )
+                    case List.length r == List.length model.records of
+                        True ->
+                            ( { model | status = NoMoreResults }, Cmd.none )
+
+                        _ ->
+                            ( { model | records = model.records ++ List.take 3 (List.drop (List.length model.records) r), status = Good }, Cmd.none )
 
                 Err err ->
                     ( { model | status = Error err }, Cmd.none )
 
 
-loadResults : Cmd Msg
-loadResults =
-    Http.get
+loadResults : Model -> Cmd Msg
+loadResults model =
+    Http.post
         { url = api_url
+        , body = Http.jsonBody (encodeCategory model.tags)
         , expect = Http.expectJson GotResult recordsDecoder
         }
 
@@ -89,7 +96,7 @@ displayCategory category =
             ]
         |> Card.block []
             [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
-            , Block.custom <| Card.columns (listOfRecords category.records)
+            , Block.custom <| (category.records |> split 3 |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
             ]
         |> Card.footer []
             [ text (statusToString category.status)
@@ -99,6 +106,16 @@ displayCategory category =
                 [ text "Load more" ]
             ]
         |> Card.view
+
+
+split : Int -> List Record -> List (List Record)
+split i list =
+    case List.take i list of
+        [] ->
+            []
+
+        listHead ->
+            listHead :: split i (List.drop i list)
 
 
 listOfRecords : List Record -> List (Card.Config Msg)
@@ -129,3 +146,6 @@ statusToString status =
 
         Good ->
             "Good"
+
+        NoMoreResults ->
+            "No new results"

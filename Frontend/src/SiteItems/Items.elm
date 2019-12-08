@@ -32,7 +32,7 @@ init =
         ( sampleItemCategory, catCmd ) =
             SiteItems.Categories.init 1
     in
-    ( [ Section sampleItemCategory ] ++ [ sampleItemClock ]
+    ( [ sampleItemClock ]
     , Cmd.batch [ Cmd.map (CategoryMsg 1) catCmd ]
     )
 
