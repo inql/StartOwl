@@ -16,6 +16,13 @@ After that wait for the following output:
 ``
 
 Configuration is stored in conf/application.conf file, where host IP address and port might be changed if needed.
+With server started, one can receive particular data using POST request to the server.
+Example using curl
+
+``
+$ curl -d '{"domain":"path_to_rss_file", "keyword":["a"]}' -H "Content-Type: application/json" -X POST http://localhost:8001/searchrequest
+``
+
 ## Project Structure
 TBD
 ## Sources
