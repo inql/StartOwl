@@ -14,14 +14,16 @@ import util.TypesDef.MappedResult
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.concurrent.Future
-import scala.util.matching.Regex
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
 
   def search(query: SearchRequest): Future[MappedResult] = {
     system.log.info(s"Received request to get data from: ${query}")
     try{
-      val feedUrl = new URL(query.domain)
+      val feedUrl = new URL(
+        query.domain.getOrElse(
+          throw new IllegalArgumentException
+        ))
       val input = new SyndFeedInput
       val feed: SyndFeed = input.build(new XmlReader(feedUrl))
       val entries = asScalaBuffer(feed.getEntries).toVector
@@ -31,6 +33,11 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
       case x: MalformedURLException => {
         system.log.error("Given URL is not correct!")
         Future.failed(x)
+      }
+      case x: IllegalArgumentException => {
+        system.log.error("Given URL cannot be null!")
+        Future failed(x)
+
       }
     }
   }
@@ -44,7 +51,6 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
         (for (element <- allEntries.filter(_.toString.contains(keyword)))
           yield buildSearchResult(element)) ++ result)
     }
-    system.log.info(s"This is all entries: ${allEntries.toString()}")
     Map("results" -> getAllResultsFromKeyword(keywords,allEntries,Seq()))
   }
 

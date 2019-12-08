@@ -11,18 +11,21 @@ import scala.concurrent.Future
 
 class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
 
-  var emptyRequest, wrongUrlRequest, correctRequest, multipleTagsRequest: SearchRequest = _
-  var rssPolsatXml, rssTvnXml, rssEmptyXml, rssWrongXml: String = _
+  var emptyRequest, wrongUrlRequest, noTagsRequest, correctRequest, multipleTagsRequest, nullUrlRequest: SearchRequest = _
+  var rssPolsatXml, rssTvnXml, rssEmptyXml, rssWrongXml: Option[String] = _
   var atomAndRssService: AtomAndRssService = _
 
   override def beforeEach(): Unit = {
-    rssPolsatXml = getClass.getResource("../rssPolsat.xml").getPath
-    rssTvnXml = getClass.getResource("../rssTvn.xml").getPath
+    rssPolsatXml = Option("file://" concat getClass.getResource("../rssPolsat.xml").getPath)
+    rssTvnXml = Option("file://" concat getClass.getResource("../rssTvn.xml").getPath)
 
-    emptyRequest = SearchRequest("",List())
-    wrongUrlRequest = SearchRequest("wrong.url",List())
+    emptyRequest = SearchRequest(Option(""),List())
+    wrongUrlRequest = SearchRequest(Option("wrong.url"),List())
     correctRequest = SearchRequest(rssPolsatXml, List("Euro"))
     multipleTagsRequest = SearchRequest(rssTvnXml, List("Euro", "Sport"))
+    noTagsRequest = SearchRequest(rssTvnXml,List())
+
+    nullUrlRequest = SearchRequest(None)
 
     atomAndRssService = new AtomAndRssService
   }
@@ -39,8 +42,23 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
       whenReady(f.failed) { s => s shouldBe a [MalformedURLException]}
     }
 
+    "raise an exception when null value is provided as a domain" in {
+      val f: Future[MappedResult] = atomAndRssService.search(nullUrlRequest)
+      whenReady(f.failed) { s => s shouldBe a [IllegalArgumentException]}
+    }
+
     "provide a correct mapped result when valid request is given" in {
       val f: Future[MappedResult] = atomAndRssService.search(correctRequest)
+      whenReady(f) { s => s shouldBe a [MappedResult]}
+    }
+
+    "provide a correct mapped result when valid multiple tag request is given" in {
+      val f: Future[MappedResult] = atomAndRssService.search(multipleTagsRequest)
+      whenReady(f) { s => s shouldBe a [MappedResult]}
+    }
+
+    "provide a correct mapped result when no tags are given" in {
+      val f: Future[MappedResult] = atomAndRssService.search(noTagsRequest)
       whenReady(f) { s => s shouldBe a [MappedResult]}
     }
   }
