@@ -13,7 +13,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
 import Http
 import SiteItems.Record exposing (..)
@@ -33,6 +33,10 @@ type alias Category =
     , records : List Record
     , status : Status
     }
+
+
+recordsInRow =
+    2
 
 
 sampleCategory : Int -> Category
@@ -68,7 +72,7 @@ update msg model =
                             ( { model | status = NoMoreResults }, Cmd.none )
 
                         _ ->
-                            ( { model | records = model.records ++ List.take 3 (List.drop (List.length model.records) r), status = Good }, Cmd.none )
+                            ( { model | records = model.records ++ List.take recordsInRow (List.drop (List.length model.records) r), status = Good }, Cmd.none )
 
                 Err err ->
                     ( { model | status = Error err }, Cmd.none )
@@ -96,7 +100,7 @@ displayCategory category =
             ]
         |> Card.block []
             [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
-            , Block.custom <| (category.records |> split 3 |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
+            , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
             ]
         |> Card.footer []
             [ text (statusToString category.status)
@@ -129,8 +133,19 @@ displayRecord record =
         |> Card.header [ class "text-align" ]
             [ text record.title
             ]
+        |> Card.imgTop
+            [ src
+                (case List.head record.img of
+                    Just i ->
+                        i
+
+                    Nothing ->
+                        ""
+                )
+            ]
+            []
         |> Card.block []
-            [ Block.text [] [ text record.url ]
+            [ Block.text [] [ text record.description ]
             , Block.link [ href record.url ] [ text record.url ]
             ]
 

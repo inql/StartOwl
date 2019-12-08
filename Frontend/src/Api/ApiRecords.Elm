@@ -1,7 +1,7 @@
 module Api.ApiRecords exposing (..)
 
 import Http
-import Json.Decode exposing (Decoder, Error(..), decodeString, field, list, map2, string)
+import Json.Decode exposing (Decoder, Error(..), decodeString, field, list, map4, string)
 import Json.Encode as Encode
 import SiteItems.Record exposing (..)
 
@@ -26,7 +26,7 @@ recordsDecoder =
 
 decodeRecord : Decoder Record
 decodeRecord =
-    map2 Record
+    map4 Record
         (field "uri"
             string
         )
@@ -34,3 +34,5 @@ decodeRecord =
             "title"
             string
         )
+        (field "description" string)
+        (field "imageUrl" (list string))
