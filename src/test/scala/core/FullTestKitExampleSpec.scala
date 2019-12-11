@@ -6,6 +6,9 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.server._
 import Directives._
 
+/**
+ * This is just an example how to use routes during tests.
+ */
 class FullTestKitExampleSpec extends WordSpec with Matchers with ScalatestRouteTest {
 
   val smallRoute: Route =
