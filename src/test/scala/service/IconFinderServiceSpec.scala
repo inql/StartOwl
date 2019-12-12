@@ -1,5 +1,6 @@
 package service
 
+import model.IconModel
 import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.model.Element
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
@@ -17,7 +18,7 @@ class IconFinderServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
   "IconFinderService" should {
 
     "return a list of apple-type favicons when getIconsBasedOnAppleTouch is called" in {
-      val result: List[Element] = iconFinderService.getIconsBasedOnAppleTouch()
+      val result: List[IconModel] = iconFinderService.getIconsBasedOnFilter(iconFinderService.appleIconFilter)
       assertResult(List())(result)
 
     }

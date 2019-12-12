@@ -2,4 +2,9 @@ package model
 
 import model.ImageFormat.ImageFormat
 
-case class IconModel(uri: String, width: Int, height: Int, format: ImageFormat, size: Long)
+case class IconModel(uri: String, size: IconSize, format: ImageFormat)
+
+case class IconSize(height: Int, width: Int) extends Ordered[IconSize] {
+  import scala.math.Ordered.orderingToOrdered
+  override def compare(that: IconSize): Int = (this.height, this.width) compare (this.height, this.width)
+}
