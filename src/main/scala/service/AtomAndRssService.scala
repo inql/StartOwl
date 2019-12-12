@@ -9,7 +9,7 @@ import java.net.{MalformedURLException, URL}
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
-import util.TypesDef.MappedResult
+import util.TypesDef.MappedApiSearchResult
 
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
 
-  def search(query: SearchRequest): Future[MappedResult] = {
+  def search(query: SearchRequest): Future[MappedApiSearchResult] = {
     system.log.info(s"Received request to get data from: ${query}")
     try{
       val feedUrl = new URL(
@@ -30,19 +30,16 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
       Future.successful(getAllResults(query.keyword,entries))
     }
     catch {
-      case x: MalformedURLException => {
+      case x: MalformedURLException =>
         system.log.error("Given URL is not correct!")
         Future.failed(x)
-      }
-      case x: IllegalArgumentException => {
+      case x: IllegalArgumentException =>
         system.log.error("Given URL cannot be null!")
         Future failed(x)
-
-      }
     }
   }
 
-  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): MappedResult = {
+  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): MappedApiSearchResult = {
     @tailrec
     def getAllResultsFromKeyword(keywords: List[String], allEntries: Vector[SyndEntry], result: Seq[ApiSearchResult]): Seq[ApiSearchResult] = keywords match {
       case Nil => result
@@ -59,12 +56,13 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
     val imgTagPattern = "<img.*?src=\"(.*?)\"[^>]+>".r
     val imgSrcPattern = "https?://([^\"]+)".r
     val domainPattern = "^(?://|[^/]+)*".r
+    val htmlTagPattern = "<[^>]*>".r
 
     def getDomainName: String = domainPattern.findFirstIn(entry.getUri).getOrElse("Unknown domain")
 
     def getPublishedDate: String = entry.getPublishedDate.toString
 
-    def getDescription: String = imgTagPattern.replaceAllIn(entry.getDescription.getValue,"").trim
+    def getDescription: String = imgTagPattern.replaceAllIn(entry.getDescription.getValue,"").replaceAll(htmlTagPattern.regex,"").trim
 
     def buildResultWithoutEnclosures(imgUrls: List[String]): ApiSearchResult = {
       val imagePath = imgTagPattern.findAllIn(entry.getDescription.getValue).toList.map(t => imgSrcPattern.findFirstIn(t).getOrElse("Unknown image."))
