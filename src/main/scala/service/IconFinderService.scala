@@ -2,37 +2,68 @@ package service
 
 import model.{IconModel, IconSize, ImageFormat}
 import model.ImageFormat.ImageFormat
-import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import net.ruippeixotog.scalascraper.browser.{Browser, JsoupBrowser}
 import util.TypesDef.LogoSearchResult
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import net.ruippeixotog.scalascraper.model._
+
+import scala.util.matching.Regex
 class IconFinderService(domainName: String) {
 
 
 
-  val browser = JsoupBrowser()
-  val doc = browser.get(domainName)
-  val heightRegex = "^[0-9][^x]*".r
-  val widthRegex = "(?<=x)[0-9]+".r
-  val imageFormatRegex = "\\.(?:jpg|ico|png)".r
+  val browser: Browser = JsoupBrowser()
+  val doc: browser.DocumentType = browser.get(domainName)
+  val heightRegex: Regex = "^[0-9][^x]*".r
+  val widthRegex: Regex = "(?<=x)[0-9]+".r
+  val imageFormatRegex: Regex = "\\.(?:jpg|ico|png)".r
+  val imageSizeRegex: Regex = "[0-9]{1,3}x[0-9]{1,3}".r
 
-  def getAllLogoCandidates(): Unit = {
+  def getAllLogoCandidates(): IconModel = {
+
+    List.concat(
+      getIconsBasedOnFilter(linkElementList,appleIconFilter,"href"),
+      getIconsBasedOnFilter(linkElementList, faviconIconFilter, "href"),
+      getIconsBasedOnFilter(metaElementList, msApplicationIconFilter, "content"),
+      getIconsBasedOnFilter(metaElementList, openGraphProtocolIconFilter, "content")
+    ).sortWith(_.size < _.size).headOption.getOrElse(IconModel("no-perfect-icon-for-you",IconSize(0,0),ImageFormat.PNG))
+
 
   }
 
   def appleIconFilter(element: Element): Boolean = element.hasAttr("rel") && element.attr("rel").equals("apple-touch-icon")
 
-  def getIconsBasedOnFilter(condition: (Element => Boolean)): List[IconModel] = {
-    (doc >> elementList("link")).filter(p => condition(p)).map(p =>
-        IconModel(p.attr("href"),getIconSize(p),
-          ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr("href")).getOrElse(".png")).getOrElse(ImageFormat.PNG))).sortWith(_.size > _.size)
+  def faviconIconFilter(element: Element): Boolean = element.hasAttr("rel") && element.attr("rel").equals("icon")
+
+  def msApplicationIconFilter(element: Element): Boolean = element.hasAttr("name") && element.attr("name").equals("msapplication-TileImage")
+
+  def openGraphProtocolIconFilter(element: Element): Boolean = element.hasAttr("property") && element.attr("property").equals("og:image")
+
+  def metaElementList: List[Element] = doc >> elementList("meta")
+
+  def linkElementList: List[Element] = doc >> elementList("link")
+
+  def getIconsBasedOnFilter(baseElementList: List[Element], condition: (Element => Boolean), sourceAttr: String): List[IconModel] = {
+
+    def getImageLink(element: Element): String = element.attrs.getOrElse(sourceAttr,"").charAt(0) match {
+      case '/' => domainName + element.attrs.getOrElse(sourceAttr,"")
+      case _ => element.attrs.getOrElse(sourceAttr,"")
+    }
+
+    def getIconSize(element: Element): IconSize = {
+      val sizes = element.attrs.getOrElse("sizes",imageSizeRegex.findFirstIn(element.attr(sourceAttr)).getOrElse(""))
+      IconSize(heightRegex.findFirstIn(sizes).getOrElse("0").toInt, widthRegex.findFirstIn(sizes).getOrElse("0").toInt)
+    }
+
+    (baseElementList).filter(p => condition(p)).map(p =>
+        IconModel(getImageLink(p),getIconSize(p),
+          ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr(sourceAttr)).getOrElse(".png")).getOrElse(ImageFormat.PNG)))
   }
 
-  def getIconSize(element: Element): IconSize = {
-    val sizes = element.attrs.getOrElse("sizes","")
-    IconSize(heightRegex.findFirstIn(sizes).getOrElse("0").toInt, widthRegex.findFirstIn(sizes).getOrElse("0").toInt)
-  }
+
+
+
 
 }

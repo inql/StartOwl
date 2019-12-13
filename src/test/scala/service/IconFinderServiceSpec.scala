@@ -7,7 +7,7 @@ import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 
 class IconFinderServiceSpec extends WordSpec with Matchers with BeforeAndAfterEach {
 
-  val urlToCheck: String = "https://www.tvn24.pl"
+  val urlToCheck: String = "https://www.wykop.pl"
 
   var iconFinderService: IconFinderService = _
 
@@ -18,7 +18,7 @@ class IconFinderServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
   "IconFinderService" should {
 
     "return a list of apple-type favicons when getIconsBasedOnAppleTouch is called" in {
-      val result: List[IconModel] = iconFinderService.getIconsBasedOnFilter(iconFinderService.appleIconFilter)
+      val result: List[IconModel] = iconFinderService.getIconsBasedOnFilter(iconFinderService.linkElementList,iconFinderService.appleIconFilter,"href")
       assertResult(List())(result)
 
     }
