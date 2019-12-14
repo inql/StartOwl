@@ -11,8 +11,8 @@ api_url =
     "http://localhost:8001/searchrequest/"
 
 
-encodeCategory : List String -> Encode.Value
-encodeCategory tags =
+preparePostJsonForCategory : List String -> Encode.Value
+preparePostJsonForCategory tags =
     Encode.object
         [ ( "keyword", Encode.list Encode.string tags )
         , ( "domain", Encode.string "https://www.polsatnews.pl/rss/wszystkie.xml" )

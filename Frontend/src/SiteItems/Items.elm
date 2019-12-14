@@ -2,6 +2,7 @@ module SiteItems.Items exposing (..)
 
 import Bootstrap.Grid as Grid
 import Html exposing (..)
+import Json.Encode as E
 import SiteItems.Categories exposing (..)
 import SiteItems.Clocks exposing (..)
 
@@ -159,3 +160,22 @@ displayItem item =
 
         CustomClock clock ->
             Html.map (ClockMsg clock.id) (SiteItems.Clocks.view clock)
+
+
+encodeItems : Model -> List E.Value
+encodeItems model =
+    model
+        |> List.map
+            (\x ->
+                case x of
+                    Section s ->
+                        encodeCategory s
+
+                    CustomClock c ->
+                        encodeClock c
+            )
+
+
+decodeItems : String -> ( List Item, Cmd Msg )
+decodeItems jsonStrong =
+    init

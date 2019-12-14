@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
 import Http
+import Json.Encode as E
 import SiteItems.Record exposing (..)
 
 
@@ -82,7 +83,7 @@ loadResults : Model -> Cmd Msg
 loadResults model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (encodeCategory model.tags)
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags)
         , expect = Http.expectJson GotResult recordsDecoder
         }
 
@@ -164,3 +165,12 @@ statusToString status =
 
         NoMoreResults ->
             "No new results"
+
+
+encodeCategory : Category -> E.Value
+encodeCategory category =
+    E.object
+        [ ( "id", E.int category.id )
+        , ( "title", E.string category.name )
+        , ( "tags", E.list E.string category.tags )
+        ]

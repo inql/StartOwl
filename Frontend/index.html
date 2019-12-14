@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Main</title>
+        <script src="main.js"></script>
+      </head>
+    <body>
+        <div id="elm"></div>
+        <script>
+        var storedName = localStorage.getItem('user-name');
+        var startName = "User";
+        if (storedName != null){
+            startName = storedName;
+        }
+
+        var storedItems = localStorage.getItem("saved-items");
+
+
+        var app = Elm.Main.init({
+          node: document.getElementById('elm'),
+          flags: [startName, storedItems]
+        });
+        app.ports.storeName.subscribe(function(name) {
+            if (name != "")
+            {
+                localStorage.setItem('user-name', name);
+            }
+            console.log(name);
+        });
+        app.ports.storeItems.subscribe(function(data)
+        {
+            localStorage.setItem("saved-items", JSON.stringify(data));
+            console.log(localStorage.getItem("saved-items"));  
+        });
+        </script>
+      </body>
+</html>

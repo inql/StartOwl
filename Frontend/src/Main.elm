@@ -17,6 +17,7 @@ import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, field, map2, map3, string)
+import Ports exposing (..)
 import SiteItems.Items exposing (..)
 import Task
 import Time
@@ -38,17 +39,22 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : ( String, Maybe String ) -> ( Model, Cmd Msg )
+init ( name, loadedItems ) =
     let
         ( items, itemsCmd ) =
-            SiteItems.Items.init
+            case loadedItems of
+                Just i ->
+                    SiteItems.Items.decodeItems i
+
+                Nothing ->
+                    ( [], Cmd.none )
 
         ( form, formCmd ) =
             Forms.CategoryForm.init
     in
-    ( Model "Dave" items form
-    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd ]
+    ( Model name items form
+    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd, storeName "Eve" ]
     )
 
 
@@ -86,7 +92,7 @@ update msg model =
                         Nothing ->
                             model.items
             in
-            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand ] )
+            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand, storeItems (encodeItems model.items) ] )
 
         CreatedNewCategory item ->
             ( { model | items = model.items ++ [ item ] }, Cmd.none )
@@ -114,3 +120,7 @@ addFooter =
         [ br [] []
         , br [] []
         ]
+
+
+
+-- PORTS

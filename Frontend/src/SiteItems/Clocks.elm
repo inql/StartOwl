@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
+import Json.Encode as E
 import Task
 import Time
 
@@ -92,3 +93,9 @@ displayClock clock =
         [ text clock.title
         , h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
         ]
+
+
+encodeClock : Clock -> E.Value
+encodeClock clock =
+    E.object
+        [ ( "id", E.int clock.id ) ]
