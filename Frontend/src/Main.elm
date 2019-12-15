@@ -7,17 +7,19 @@ import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
+import Bootstrap.Popover as Popover
 import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Forms.CategoryForm
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (class, href)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, href, style, value)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode exposing (Decoder, field, map2, map3, string)
 import Ports exposing (..)
+import SiteItems.Categories exposing (Category)
 import SiteItems.Items exposing (..)
 import Task
 import Time
@@ -27,6 +29,7 @@ type alias Model =
     { name : String
     , items : SiteItems.Items.Model
     , categoryForm : Forms.CategoryForm.Model
+    , popoverState : Popover.State
     }
 
 
@@ -53,15 +56,16 @@ init ( name, loadedItems ) =
         ( form, formCmd ) =
             Forms.CategoryForm.init
     in
-    ( Model name items form
-    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd, storeName "Eve" ]
+    ( Model name items form Popover.initialState
+    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd ]
     )
 
 
 type Msg
     = UpdateItems SiteItems.Items.Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
-    | CreatedNewCategory Item
+    | UpdateName String
+    | PopoverMsg Popover.State
 
 
 subscriptions : Model -> Sub Msg
@@ -84,18 +88,25 @@ update msg model =
                 ( updatedForm, givenCommand, possibleNewCommand ) =
                     Forms.CategoryForm.update m model.categoryForm
 
-                newItems =
+                ( itemsAfterAdding, commandAfterAdd ) =
                     case possibleNewCommand of
                         Just cat ->
-                            model.items ++ [ Section cat ]
+                            let
+                                newItems =
+                                    model.items ++ [ Section (Category (List.length model.items) cat.name cat.tags [] cat.status) ]
+                            in
+                            ( newItems, storeItems (encodeItems newItems) )
 
                         Nothing ->
-                            model.items
+                            ( model.items, Cmd.none )
             in
-            ( { model | categoryForm = updatedForm, items = newItems }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand, storeItems (encodeItems model.items) ] )
+            ( { model | categoryForm = updatedForm, items = itemsAfterAdding }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand, commandAfterAdd ] )
 
-        CreatedNewCategory item ->
-            ( { model | items = model.items ++ [ item ] }, Cmd.none )
+        UpdateName newName ->
+            ( { model | name = newName }, storeName newName )
+
+        PopoverMsg state ->
+            ( { model | popoverState = state }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -103,7 +114,13 @@ view model =
     div [ class "text-center" ]
         [ CDN.stylesheet
         , div []
-            [ h1 []
+            [ div
+                [ style "position" "absolute"
+                , style "right" "0"
+                , style "top" "0"
+                ]
+                [ addPopover model ]
+            , h1 []
                 [ text "Hello"
                 , Badge.badgeSuccess [ Spacing.ml1 ] [ text model.name ]
                 ]
@@ -119,6 +136,31 @@ addFooter =
     div []
         [ br [] []
         , br [] []
+        ]
+
+
+addPopover : Model -> Html Msg
+addPopover model =
+    Popover.config
+        (Button.button
+            [ Button.primary
+            , Button.large
+            , Button.attrs <|
+                Popover.onClick model.popoverState PopoverMsg
+            ]
+            [ text "Settings"
+            ]
+        )
+        |> Popover.left
+        |> Popover.content []
+            [ showSettings model ]
+        |> Popover.view model.popoverState
+
+
+showSettings : Model -> Html Msg
+showSettings model =
+    div []
+        [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
         ]
 
 

@@ -56,7 +56,7 @@ update msg model =
 
 createNewCategory : Model -> Category
 createNewCategory model =
-    Category (model.title |> String.length) model.title model.tags [] Loading
+    Category -1 model.title model.tags [] Loading
 
 
 view : Model -> Html Msg
