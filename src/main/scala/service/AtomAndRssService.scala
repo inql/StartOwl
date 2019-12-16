@@ -1,5 +1,7 @@
 package service
 
+import java.io.FileNotFoundException
+
 import javax.inject.Inject
 import model.{ApiSearchResult, SearchRequest}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
@@ -14,6 +16,7 @@ import util.TypesDef.MappedApiSearchResult
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.concurrent.Future
+import scala.io.Source
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
 
@@ -64,15 +67,25 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
 
     def getDescription: String = imgTagPattern.replaceAllIn(entry.getDescription.getValue,"").replaceAll(htmlTagPattern.regex,"").trim
 
+    def checkImage(uri:String) : String = {
+      try{
+        val wholeImage = Source.fromURL(uri)
+        uri
+      }
+      catch {
+        case x @ (_ :FileNotFoundException | _: MalformedURLException) => new IconFinderService(getDomainName).getBestLogoCandidate().uri
+      }
+    }
+
     def buildResultWithoutEnclosures(imgUrls: List[String]): ApiSearchResult = {
-      val imagePath = imgTagPattern.findAllIn(entry.getDescription.getValue).toList.map(t => imgSrcPattern.findFirstIn(t).getOrElse("Unknown image."))
+      val imagePath = imgTagPattern.findAllIn(entry.getDescription.getValue).toList.map(t => checkImage(imgSrcPattern.findFirstIn(t).getOrElse("Unknown image.")))
       ApiSearchResult(entry.getUri,entry.getTitle,getDescription,imagePath ::: imgUrls, getDomainName, getPublishedDate)
     }
 
     @tailrec
     def buildResultFromRssEntry(enclosures: List[SyndEnclosure], imgUrls: List[String]): ApiSearchResult = enclosures match {
       case Nil => buildResultWithoutEnclosures(imgUrls)
-      case enclosure :: rest => buildResultFromRssEntry(rest, enclosure.getUrl :: imgUrls)
+      case enclosure :: rest => buildResultFromRssEntry(rest, checkImage(enclosure.getUrl) :: imgUrls)
     }
 
     buildResultFromRssEntry(asScalaBuffer(entry.getEnclosures).toList, List())
