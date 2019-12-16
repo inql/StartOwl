@@ -97,7 +97,7 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
         "https://eurosport.tvn24.pl/pilka-nozna,105/gala-pzpn-reprezentacja-100-lecia-wyniki,991294.html",
         "Poznaliśmy Reprezentację 100-lecia PZPN",
         "Na ten moment czekała cała piłkarska Polska. Na piątkowej gali Polskiego Związku Piłki Nożnej ogłoszona została Reprezentacja 100-lecia. Przedstawiamy wyniki plebiscytu PZPN.",
-        List("https://r-scale-80.dcs.redcdn.pl/scale/o2/tvn/web-content/m/p1/i/36ac8e558ac7690b6f44e2cb5ef93322/9c51c933-3cf5-4357-a5cc-b492800dd54a.jpg?type=1&#38;srcmode=4&#38;srcx=0/1&#38;srcy=0/1&#38;srcw=50&#38;srch=50&#38;dstw=50&#38;dsth=50&#38;quality=80"),
+        List("https://s7-tvn24.cdntvn.pl/img/sport/apple-touch-icon-144x144.png?v=cc35b9edcfacb5c6232a1dc28e99d8dd"),
         "https://eurosport.tvn24.pl",
         "Fri Dec 06 22:19:30 CET 2019")
       whenReady(f) {s => s("results") should contain (result)}
