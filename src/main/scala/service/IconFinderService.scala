@@ -21,14 +21,14 @@ class IconFinderService(domainName: String) {
   val imageFormatRegex: Regex = "\\.(?:jpg|ico|png)".r
   val imageSizeRegex: Regex = "[0-9]{1,3}x[0-9]{1,3}".r
 
-  def getAllLogoCandidates(): IconModel = {
+  def getBestLogoCandidate(): IconModel = {
 
     List.concat(
       getIconsBasedOnFilter(linkElementList,appleIconFilter,"href"),
       getIconsBasedOnFilter(linkElementList, faviconIconFilter, "href"),
       getIconsBasedOnFilter(metaElementList, msApplicationIconFilter, "content"),
       getIconsBasedOnFilter(metaElementList, openGraphProtocolIconFilter, "content")
-    ).sortWith(_.size < _.size).headOption.getOrElse(IconModel("no-perfect-icon-for-you",IconSize(0,0),ImageFormat.PNG))
+    ).sortWith(_.size > _.size).headOption.getOrElse(IconModel("no-perfect-icon-for-you",IconSize(0,0),ImageFormat.PNG))
 
 
   }

@@ -2,7 +2,7 @@ package core
 
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, Route}
+import akka.http.scaladsl.server.{Directive, ExceptionHandler, RejectionHandler, Route}
 import akka.http.scaladsl.server.RouteConcatenation._enhanceRouteWithConcatenation
 import akka.http.scaladsl.server.directives.FutureDirectives.onComplete
 import akka.http.scaladsl.model.StatusCodes.{OK, ServiceUnavailable}
@@ -36,14 +36,14 @@ class Routes @Inject()(atomAndRssService: AtomAndRssService) extends AkkaSystemU
   import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
   // Your rejection handler
-  val rejectionHandler = corsRejectionHandler.withFallback(RejectionHandler.default)
+  val rejectionHandler: RejectionHandler = corsRejectionHandler.withFallback(RejectionHandler.default)
 
   // Your exception handler
   val exceptionHandler = ExceptionHandler {
     case e: NoSuchElementException => complete(StatusCodes.NotFound -> e.getMessage)
   }
   // Combining the two handlers only for convenience
-  val handleErrors = handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)
+  val handleErrors: Directive[Unit] = handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)
 
   lazy val routes: Route = {
     handleErrors {
