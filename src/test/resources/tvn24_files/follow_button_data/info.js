@@ -1,1 +1,0 @@
-/**/__twttr.setFollowersCountAndFollowing([{"following":false,"id":"14493047","screen_name":"tvn24","name":"tvn24","protected":false,"followers_count":1370751,"formatted_followers_count":"1,37\u00A0mln obserwuj\u0105cych","age_gated":false}]);
