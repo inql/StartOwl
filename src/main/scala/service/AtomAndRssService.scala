@@ -28,11 +28,23 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
   var domainName: String = _
   var iconFinderService: IconFinderService = _
 
-  def search(query: SearchRequest): Future[MappedApiSearchResult] = {
-    system.log.info(s"Received request to get data from: ${query}")
+  def findAllResults(query: SearchRequest): Future[MappedApiSearchResult] = {
+
+    def searchLoop(allDomains: List[Option[String]], result: Seq[ApiSearchResult] = Seq()): Seq[ApiSearchResult] = allDomains match {
+      case Nil => result
+      case head :: tail => searchLoop(tail,(result ++ search(head,query.keyword)))
+    }
+
+    Future.successful(Map("results" -> searchLoop(query.domains)))
+
+  }
+
+
+  def search(domain: Option[String], keywords: List[String]): Seq[ApiSearchResult] = {
+    system.log.info(s"Received request to get data from: ${domain} that matches ${keywords}")
     try{
       val feedUrl = new URL(
-        query.domain.getOrElse(
+        domain.getOrElse(
           throw new IllegalArgumentException
         ))
 
@@ -44,28 +56,28 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
       iconFinderService = new IconFinderService(
         domainName = domainPattern.findFirstIn(feedUrl.getPath).getOrElse("Unknown domain"))
 
-      Future.successful(getAllResults(query.keyword,entries))
+      getAllResults(keywords,entries)
     }
     catch {
       case x: MalformedURLException =>
         system.log.error("Given URL is not correct!")
-        Future.failed(x)
+        Seq()
       case x: IllegalArgumentException =>
         system.log.error("Given URL cannot be null!")
-        Future failed(x)
+        Seq()
     }
   }
 
-  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): MappedApiSearchResult = {
+  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): Seq[ApiSearchResult] = {
     @tailrec
-    def getAllResultsFromKeyword(keywords: List[String], allEntries: Vector[SyndEntry], result: Seq[ApiSearchResult]): Seq[ApiSearchResult] = keywords match {
+    def getAllResultsFromKeyword(keywords: List[String], allEntries: Vector[SyndEntry], result: Seq[ApiSearchResult] = Seq()): Seq[ApiSearchResult] = keywords match {
       case Nil => result
       case keyword :: rest => getAllResultsFromKeyword(
         rest, allEntries,
         (for (element <- allEntries.filter(_.toString.contains(keyword)))
           yield buildSearchResult(element)) ++ result)
     }
-    Map("results" -> getAllResultsFromKeyword(keywords,allEntries,Seq()))
+    getAllResultsFromKeyword(keywords,allEntries)
   }
 
   def buildSearchResult(entry: SyndEntry): ApiSearchResult = {

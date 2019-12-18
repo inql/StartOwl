@@ -14,19 +14,19 @@ import service.AtomAndRssService
 import scala.concurrent.Future
 
 object TestVariables {
-  val incorrectSearchRequest: SearchRequest = SearchRequest(Option("wrong.url"))
-  val correctSearchRequest: SearchRequest = SearchRequest(Option("https://correct.url.com"),List("Test1","Test2"))
+  val incorrectSearchRequest: SearchRequest = SearchRequest(List(Option("wrong.url")))
+  val correctSearchRequest: SearchRequest = SearchRequest(List(Option("https://correct.url.com")),List("Test1","Test2"))
 }
 
 object MockHelper extends AsyncMockFactory {
   val incorrectMockAtomAndRssService = {
     val fm = mock[AtomAndRssService]
-    (fm.search _).expects(TestVariables.incorrectSearchRequest).returning(Future.failed(new MalformedURLException())).noMoreThanOnce()
+    (fm.findAllResults _).expects(TestVariables.incorrectSearchRequest).returning(Future.successful(Map("results" -> List()))).noMoreThanOnce()
     fm
   }
   val correctMockAtomAndRssService = {
     val fm = mock[AtomAndRssService]
-    (fm.search _).expects(TestVariables.correctSearchRequest).returning(Future.successful(Map("results" -> List()))).noMoreThanOnce()
+    (fm.findAllResults _).expects(TestVariables.correctSearchRequest).returning(Future.successful(Map("results" -> List()))).noMoreThanOnce()
     fm
   }
 }
@@ -74,7 +74,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
            |{
 
-           |    "domain":"wrong.url",
+           |    "domains":["wrong.url"],
 
            |    "keyword":[]
 
@@ -89,7 +89,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
       )
 
       postRequest ~> Route.seal(IncorrectMockRoutes.routes) ~> check {
-        status.isFailure() shouldEqual true
+        status.isSuccess() shouldEqual true
       }
 
     }
@@ -100,7 +100,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
            |{
 
-           |    "domain":"https://correct.url.com",
+           |    "domains":["https://correct.url.com"],
 
            |    "keyword":["Test1","Test2"]
 

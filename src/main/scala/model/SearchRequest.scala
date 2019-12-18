@@ -1,3 +1,3 @@
 package model
 
-case class SearchRequest(domain: Option[String], keyword: List[String] = List())
+case class SearchRequest(domains: List[Option[String]], keyword: List[String] = List())

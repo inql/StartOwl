@@ -66,8 +66,11 @@ class IconFinderService(domainName: String) {
       IconSize(heightRegex.findFirstIn(sizes).getOrElse("0").toInt, widthRegex.findFirstIn(sizes).getOrElse("0").toInt)
     }
 
-    ElementFinderService.getElementsBasedOnFilter(baseElementList,condition,(p:Element) => IconModel(getImageLink(p),getIconSize(p),
-      ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr(sourceAttr)).getOrElse(".png")).getOrElse(ImageFormat.PNG))) match {
+    val operation = (p: Element) =>
+      IconModel(getImageLink(p),getIconSize(p),
+        ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr(sourceAttr)).getOrElse(".png")).getOrElse(ImageFormat.PNG))
+
+    ElementFinderService.getElementsBasedOnFilter(baseElementList,condition,operation) match {
       case result: List[IconModel] => result
       case _ => throw new ClassCastException
     }

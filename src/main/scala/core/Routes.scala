@@ -56,7 +56,7 @@ class Routes @Inject()(atomAndRssService: AtomAndRssService) extends AkkaSystemU
           pathPrefix("searchrequest"){
             post {
               entity(as[SearchRequest]) { searchRequest =>
-                handleWithGeneric(atomAndRssService.search(searchRequest)) { record =>
+                handleWithGeneric(atomAndRssService.findAllResults(searchRequest)) { record =>
                   complete(record)
                 }
               }
