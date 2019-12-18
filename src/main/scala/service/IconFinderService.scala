@@ -15,13 +15,22 @@ class IconFinderService(domainName: String) {
 
 
   val browser: Browser = JsoupBrowser()
-  val doc: browser.DocumentType = browser.get(domainName)
+  var doc: browser.DocumentType = _
+
+  try{
+    doc = browser.get(domainName)
+  } catch {
+    case x @ (_: IllegalArgumentException) => List(IconModel("no-perfect-icon-for-you",IconSize(0,0),ImageFormat.PNG))
+  }
+
   val heightRegex: Regex = "^[0-9][^x]*".r
   val widthRegex: Regex = "(?<=x)[0-9]+".r
   val imageFormatRegex: Regex = "\\.(?:jpg|ico|png)".r
   val imageSizeRegex: Regex = "[0-9]{1,3}x[0-9]{1,3}".r
 
   def getBestLogoCandidate(): IconModel = {
+
+
 
     List.concat(
       getIconsBasedOnFilter(linkElementList,appleIconFilter,"href"),

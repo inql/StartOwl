@@ -17,8 +17,16 @@ import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.matching.Regex
 
 class AtomAndRssService@Inject extends AkkaSystemUtils{
+
+  val imgTagPattern: Regex = "<img.*?src=\"(.*?)\"[^>]+>".r
+  val imgSrcPattern: Regex = "https?://([^\"]+)".r
+  val domainPattern: Regex = "^(?://|[^/]+)*".r
+  val htmlTagPattern: Regex = "<[^>]*>".r
+  var domainName: String = _
+  var iconFinderService: IconFinderService = _
 
   def search(query: SearchRequest): Future[MappedApiSearchResult] = {
     system.log.info(s"Received request to get data from: ${query}")
@@ -27,9 +35,15 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
         query.domain.getOrElse(
           throw new IllegalArgumentException
         ))
+
       val input = new SyndFeedInput
       val feed: SyndFeed = input.build(new XmlReader(feedUrl))
       val entries = asScalaBuffer(feed.getEntries).toVector
+
+
+      iconFinderService = new IconFinderService(
+        domainName = domainPattern.findFirstIn(feedUrl.getPath).getOrElse("Unknown domain"))
+
       Future.successful(getAllResults(query.keyword,entries))
     }
     catch {
@@ -55,11 +69,6 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
   }
 
   def buildSearchResult(entry: SyndEntry): ApiSearchResult = {
-
-    val imgTagPattern = "<img.*?src=\"(.*?)\"[^>]+>".r
-    val imgSrcPattern = "https?://([^\"]+)".r
-    val domainPattern = "^(?://|[^/]+)*".r
-    val htmlTagPattern = "<[^>]*>".r
 
     def getDomainName: String = domainPattern.findFirstIn(entry.getUri).getOrElse("Unknown domain")
 
