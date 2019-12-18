@@ -1,7 +1,8 @@
 package util
 
-import model.ApiSearchResult
+import model.{ApiSearchResult, IconModel}
 
 object TypesDef {
-  type MappedResult = Map[String,Seq[ApiSearchResult]]
+  type MappedApiSearchResult = Map[String,Seq[ApiSearchResult]]
+  type LogoSearchResult = Seq[IconModel]
 }
