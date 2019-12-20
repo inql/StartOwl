@@ -14,8 +14,8 @@ import service.AtomAndRssService
 import scala.concurrent.Future
 
 object TestVariables {
-  val incorrectSearchRequest: SearchRequest = SearchRequest(List(Option("wrong.url")))
-  val correctSearchRequest: SearchRequest = SearchRequest(List(Option("https://correct.url.com")),List("Test1","Test2"))
+  val incorrectSearchRequest: SearchRequest = SearchRequest(List(Option("wrong.url")), "contains")
+  val correctSearchRequest: SearchRequest = SearchRequest(List(Option("https://correct.url.com")), "contains", List("Test1","Test2"))
 }
 
 object MockHelper extends AsyncMockFactory {
@@ -76,6 +76,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
            |    "domains":["wrong.url"],
 
+           |    "searchModeInput":"contains",
+
            |    "keyword":[]
 
            |}
@@ -101,6 +103,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
            |{
 
            |    "domains":["https://correct.url.com"],
+
+           |    "searchModeInput":"contains",
 
            |    "keyword":["Test1","Test2"]
 

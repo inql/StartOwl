@@ -3,7 +3,7 @@ package service
 import java.io.FileNotFoundException
 
 import javax.inject.Inject
-import model.{ApiSearchResult, SearchRequest}
+import model.{ApiSearchResult, SearchMode, SearchRequest}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import util.AkkaSystemUtils
 import java.net.{MalformedURLException, URL}
@@ -32,7 +32,7 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
 
     def searchLoop(allDomains: List[Option[String]], result: Seq[ApiSearchResult] = Seq()): Seq[ApiSearchResult] = allDomains match {
       case Nil => result
-      case head :: tail => searchLoop(tail,(result ++ search(head,query.keyword)))
+      case head :: tail => searchLoop(tail,(result ++ search(head,query.keyword, query.searchMode)))
     }
 
     Future.successful(Map("results" -> searchLoop(query.domains)))
@@ -40,7 +40,7 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
   }
 
 
-  def search(domain: Option[String], keywords: List[String]): Seq[ApiSearchResult] = {
+  def search(domain: Option[String], keywords: List[String], searchMode: SearchMode): Seq[ApiSearchResult] = {
     system.log.info(s"Received request to get data from: ${domain} that matches ${keywords}")
     try{
       val feedUrl = new URL(
@@ -56,7 +56,7 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
       iconFinderService = new IconFinderService(
         domainName = domainPattern.findFirstIn(feedUrl.getPath).getOrElse("Unknown domain"))
 
-      getAllResults(keywords,entries)
+      getAllResults(keywords,entries, searchMode)
     }
     catch {
       case x: MalformedURLException =>
@@ -68,13 +68,13 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
     }
   }
 
-  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry]): Seq[ApiSearchResult] = {
+  def getAllResults(keywords: List[String], allEntries: Vector[SyndEntry], searchMode: SearchMode): Seq[ApiSearchResult] = {
     @tailrec
     def getAllResultsFromKeyword(keywords: List[String], allEntries: Vector[SyndEntry], result: Seq[ApiSearchResult] = Seq()): Seq[ApiSearchResult] = keywords match {
       case Nil => result
       case keyword :: rest => getAllResultsFromKeyword(
         rest, allEntries,
-        (for (element <- allEntries.filter(_.toString.contains(keyword)))
+        (for (element <- allEntries.filter(searchMode.filter(_,keyword)))
           yield buildSearchResult(element)) ++ result)
     }
     getAllResultsFromKeyword(keywords,allEntries)

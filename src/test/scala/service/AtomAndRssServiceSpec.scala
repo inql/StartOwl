@@ -1,6 +1,6 @@
 package service
 
-import model.{ApiSearchResult, SearchRequest}
+import model.{ApiSearchResult, SearchMode, SearchRequest}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import util.TypesDef.MappedApiSearchResult
@@ -17,14 +17,14 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
     rssPolsatXml = Option("file://" concat getClass.getResource("../rssPolsat.xml").getPath)
     rssTvnXml = Option("file://" concat getClass.getResource("../rssTvn.xml").getPath)
 
-    emptyRequest = SearchRequest(List(Option("xd")),List())
-    wrongUrlRequest = SearchRequest(List(Option("wrong.url")),List())
-    correctRequest = SearchRequest(List(rssPolsatXml), List("Uber"))
-    multipleTagsRequest = SearchRequest(List(rssTvnXml), List("PZPN", "Sport"))
-    noTagsRequest = SearchRequest(List(rssTvnXml),List())
+    emptyRequest = SearchRequest(List(Option("xd")), "contains",List())
+    wrongUrlRequest = SearchRequest(List(Option("wrong.url")), "contains", List())
+    correctRequest = SearchRequest(List(rssPolsatXml), "contains", List("Uber"))
+    multipleTagsRequest = SearchRequest(List(rssTvnXml), "contains", List("PZPN", "Sport"))
+    noTagsRequest = SearchRequest(List(rssTvnXml), "contains", List())
 
-    nullUrlRequest = SearchRequest(List(Option("xd")))
-    nullTagsRequest = SearchRequest(List(rssTvnXml), null)
+    nullUrlRequest = SearchRequest(List(Option("xd")), "contains")
+    nullTagsRequest = SearchRequest(List(rssTvnXml), "contains", null)
 
     atomAndRssService = new AtomAndRssService
   }
