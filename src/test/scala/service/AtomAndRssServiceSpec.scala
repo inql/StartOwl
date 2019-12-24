@@ -87,7 +87,7 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
         "Łącznie 5981 napaści na tle seksualnym podczas przejazdów Uberem zaraportowano w Stanach Zjednoczonych w 2017 i 2018 roku. Przewoźnik opublikował obszerny raport dotyczący bezpieczeństwa, który podsumowuje zgłoszenia wszystkich użytkowników platformy - pasażerów i kierowców.",
         List("https://r.dcs.redcdn.pl/http/o2/redefine/cp/bg/bgg4csjtvnfotnau6ypxk9je29upc52q.jpg", "https://r.dcs.redcdn.pl/http/o2/redefine/cp/k8/k87opn6efmx1c16n5hb6134mmrvs85ea.jpg"),
         "https://www.polsatnews.pl",
-        "Fri Dec 06 22:47:00 CET 2019"
+        "Fri Dec 06 22:47:00 CET 2019",1
       )
       whenReady(f) {s => s("results") should contain (result)}
     }
@@ -100,7 +100,7 @@ class AtomAndRssServiceSpec extends WordSpec with Matchers with BeforeAndAfterEa
         "Na ten moment czekała cała piłkarska Polska. Na piątkowej gali Polskiego Związku Piłki Nożnej ogłoszona została Reprezentacja 100-lecia. Przedstawiamy wyniki plebiscytu PZPN.",
         List("https://s7-tvn24.cdntvn.pl/img/sport/apple-touch-icon-144x144.png?v=2220296e70c468dac07ab84fb5eaf775"),
         "https://eurosport.tvn24.pl",
-        "Fri Dec 06 22:19:30 CET 2019")
+        "Fri Dec 06 22:19:30 CET 2019",1)
       whenReady(f) {s => s("results") should contain (result)}
     }
 
