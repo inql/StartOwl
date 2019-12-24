@@ -20,7 +20,7 @@ With server started, one can receive particular data using POST request to the s
 Example using curl
 
 ``
-$ curl -d '{"domain":"path_to_rss_file", "keyword":["a"]}' -H "Content-Type: application/json" -X POST http://localhost:8001/searchrequest
+$ curl -d '{"domains":"[path_to_rss_file]", "keyword":["a"], "searchModeInput":"contains"}' -H "Content-Type: application/json" -X POST http://localhost:8001/searchrequest
 ``
 
 ## Project Structure
