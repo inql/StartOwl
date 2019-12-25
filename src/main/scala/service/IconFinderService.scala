@@ -15,13 +15,22 @@ class IconFinderService(domainName: String) {
 
 
   val browser: Browser = JsoupBrowser()
-  val doc: browser.DocumentType = browser.get(domainName)
+  var doc: browser.DocumentType = _
+
+  try{
+    doc = browser.get(domainName)
+  } catch {
+    case x @ (_: IllegalArgumentException) => List(IconModel("no-perfect-icon-for-you",IconSize(0,0),ImageFormat.PNG))
+  }
+
   val heightRegex: Regex = "^[0-9][^x]*".r
   val widthRegex: Regex = "(?<=x)[0-9]+".r
   val imageFormatRegex: Regex = "\\.(?:jpg|ico|png)".r
   val imageSizeRegex: Regex = "[0-9]{1,3}x[0-9]{1,3}".r
 
   def getBestLogoCandidate(): IconModel = {
+
+
 
     List.concat(
       getIconsBasedOnFilter(linkElementList,appleIconFilter,"href"),
@@ -57,9 +66,14 @@ class IconFinderService(domainName: String) {
       IconSize(heightRegex.findFirstIn(sizes).getOrElse("0").toInt, widthRegex.findFirstIn(sizes).getOrElse("0").toInt)
     }
 
-    (baseElementList).filter(p => condition(p)).map(p =>
-        IconModel(getImageLink(p),getIconSize(p),
-          ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr(sourceAttr)).getOrElse(".png")).getOrElse(ImageFormat.PNG)))
+    val operation = (p: Element) =>
+      IconModel(getImageLink(p),getIconSize(p),
+        ImageFormat.withNameOpt(imageFormatRegex.findFirstIn(p.attr(sourceAttr)).getOrElse(".png")).getOrElse(ImageFormat.PNG))
+
+    ElementFinderService.getElementsBasedOnFilter(baseElementList,condition,operation) match {
+      case result: List[IconModel] => result
+      case _ => throw new ClassCastException
+    }
   }
 
 
