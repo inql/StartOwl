@@ -9,6 +9,8 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import net.ruippeixotog.scalascraper.model._
 
+import scala.util.matching.Regex
+
 class RssFinderService(domainName: String) {
 
   val browser = JsoupBrowser()
@@ -21,15 +23,18 @@ class RssFinderService(domainName: String) {
   }
 
   def getAllValidRssFeeds(): List[String] = {
-    (wordPressFeed :: rssSourceUrl).filterNot(_.equals(""))
+    (wordPressFeed :: tumblrFeed :: bloggerFeed :: rssSourceUrl).filterNot(_.equals(""))
   }
 
-  def wordPressFeed: String = {
-    var feedUrl = domainName + "/feed"
+  def wordPressFeed: String = getFeedBasedOnUrl(domainName + "/feed")
+  def tumblrFeed: String = getFeedBasedOnUrl(domainName + "/rss")
+  def bloggerFeed: String = getFeedBasedOnUrl(domainName + "/feeds/posts/default")
+
+  def getFeedBasedOnUrl(feedUrl: String): String = {
     try {
       browser.get(feedUrl)
     } catch {
-      case x @ (_: FileNotFoundException | _: MalformedURLException) => feedUrl = ""
+      case x @ (_: FileNotFoundException | _: MalformedURLException) => return ""
     }
     feedUrl
   }
@@ -48,7 +53,7 @@ class RssFinderService(domainName: String) {
 
   def rssSourceUrl: List[String] = ElementFinderService.getElementsBasedOnFilter(linkElementList, rssElementFilter, operation) match {
     case result: List[String] => result
-    case _ => throw ClassCastException
+    case _ => throw new ClassCastException
   }
 
 
