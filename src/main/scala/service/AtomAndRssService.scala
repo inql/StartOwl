@@ -32,16 +32,17 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
     }
 
     @tailrec
-    def validateInputs(allDomains: List[Option[String]], result: List[Option[String]]): List[Option[String]] = allDomains match {
+    def validateInputs(allDomains: List[Option[String]], result: List[Option[String]] = List()): List[Option[String]] = allDomains match {
       case Nil => result
       case head :: tail => rssRegex.findFirstMatchIn(head.get) match {
-        case Some(_) => validateInputs(tail, new RssFinderService(head.get).getAllValidRssFeeds().map(Option(_)) ++ result)
-        case None => validateInputs(tail, head :: result)
+        case None => validateInputs(tail, new RssFinderService(head.get).getAllValidRssFeeds().map(Option(_)) ++ result)
+        case Some(_) => validateInputs(tail, head :: result)
       }
     }
 
 
-    Future.successful(Map("results" -> searchLoop(query.domains)))
+    Future.successful(Map("results" -> searchLoop(
+      validateInputs(query.domains))))
 
   }
 

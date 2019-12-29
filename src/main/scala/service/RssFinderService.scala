@@ -9,8 +9,6 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import net.ruippeixotog.scalascraper.model._
 
-import scala.util.matching.Regex
-
 class RssFinderService(domainName: String) {
 
   val browser = JsoupBrowser()
@@ -19,11 +17,16 @@ class RssFinderService(domainName: String) {
   try{
     doc = browser.get(domainName)
   } catch {
-    case x @ (_: IllegalArgumentException) => List()
+    case x @ (_: IllegalArgumentException | _: MalformedURLException) => List()
   }
 
   def getAllValidRssFeeds(): List[String] = {
-    (wordPressFeed :: tumblrFeed :: bloggerFeed :: rssSourceUrl).filterNot(_.equals(""))
+    try{
+      doc = browser.get(domainName)
+      (wordPressFeed :: tumblrFeed :: bloggerFeed :: rssSourceUrl).filterNot(_.equals(""))
+    } catch {
+      case x @ (_: IllegalArgumentException | _: MalformedURLException) => List()
+    }
   }
 
   def wordPressFeed: String = getFeedBasedOnUrl(domainName + "/feed")
@@ -34,7 +37,7 @@ class RssFinderService(domainName: String) {
     try {
       browser.get(feedUrl)
     } catch {
-      case x @ (_: FileNotFoundException | _: MalformedURLException) => return ""
+      case x @ (_: FileNotFoundException | _: MalformedURLException | _: IllegalArgumentException) => return ""
     }
     feedUrl
   }
@@ -46,7 +49,7 @@ class RssFinderService(domainName: String) {
   def linkElementList: List[Element] = doc >> elementList("link")
   def rssElementFilter(element: Element): Boolean = element.hasAttr("type") && element.attr("type").equals("application/rss+xml")
 
-  val operation = (p: Element) => p.attrs.getOrElse("href", "").charAt(0) match {
+  lazy val operation = (p: Element) => p.attrs.getOrElse("href", "").charAt(0) match {
     case '/' => domainName + p.attrs.getOrElse("href","")
     case _ => p.attrs.getOrElse("href","")
   }
