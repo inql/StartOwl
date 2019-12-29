@@ -31,7 +31,6 @@ class IconFinderService(domainName: String) {
   def getBestLogoCandidate(): IconModel = {
 
 
-
     List.concat(
       getIconsBasedOnFilter(linkElementList,appleIconFilter,"href"),
       getIconsBasedOnFilter(linkElementList, faviconIconFilter, "href"),
