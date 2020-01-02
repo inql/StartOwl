@@ -42,7 +42,7 @@ class AtomAndRssService@Inject extends AkkaSystemUtils{
 
 
     Future.successful(Map("results" -> searchLoop(
-      validateInputs(query.domains))))
+      validateInputs(query.domains)).sortBy(_.score)(Desc)))
 
   }
 

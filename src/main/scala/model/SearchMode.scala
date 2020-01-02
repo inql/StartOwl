@@ -2,7 +2,7 @@ package model
 
 import com.rometools.rome.feed.synd.SyndEntry
 
-case class SearchMode(name: String, filter: (SyndEntry, String) => Boolean, score: (List[String], String) => Int)
+case class SearchMode(name: String, filter: (SyndEntry, String) => Boolean, score: (List[String], SyndEntry) => Int)
 
 object SearchMode {
 
@@ -13,7 +13,7 @@ object SearchMode {
 
 
   def containsFilter: (SyndEntry, String) => Boolean = (e: SyndEntry, s: String) => {e.getDescription.getValue.contains(s)}
-  def containsFilterScore: (List[String], String) => Int = (str: List[String], sub: String) => str.count(sub.contains(_))
+  def containsFilterScore: (List[String], SyndEntry) => Int = (str: List[String], sub: SyndEntry) => str.count(sub.getDescription.getValue.contains(_))
 
-  val contains = SearchMode("contains", (e: SyndEntry, s: String) => {e.getDescription.getValue.contains(s)}, containsFilterScore)
+  val contains = SearchMode("contains", containsFilter, containsFilterScore)
 }

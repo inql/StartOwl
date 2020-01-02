@@ -8,6 +8,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import net.ruippeixotog.scalascraper.model._
+import org.jsoup.HttpStatusException
 
 
 
@@ -19,7 +20,7 @@ class RssFinderService(domainName: String) {
   try{
     doc = browser.get(domainName)
   } catch {
-    case x @ (_: IllegalArgumentException | _: MalformedURLException) => List()
+    case x @ (_: IllegalArgumentException | _: MalformedURLException | _: HttpStatusException) => List()
   }
 
   def getAllValidRssFeeds(): List[String] = {
@@ -27,7 +28,7 @@ class RssFinderService(domainName: String) {
       doc = browser.get(domainName)
       (wordPressFeed :: tumblrFeed :: bloggerFeed :: rssSourceUrl).filterNot(_.equals(""))
     } catch {
-      case x @ (_: IllegalArgumentException | _: MalformedURLException) => List()
+      case x @ (_: IllegalArgumentException | _: MalformedURLException | _: HttpStatusException) => List()
     }
   }
 
@@ -39,7 +40,7 @@ class RssFinderService(domainName: String) {
     try {
       browser.get(feedUrl)
     } catch {
-      case x @ (_: FileNotFoundException | _: MalformedURLException | _: IllegalArgumentException) => return ""
+      case x @ (_: FileNotFoundException | _: MalformedURLException | _: IllegalArgumentException | _: HttpStatusException) => return ""
     }
     feedUrl
   }
