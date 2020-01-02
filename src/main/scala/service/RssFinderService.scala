@@ -9,6 +9,8 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 import net.ruippeixotog.scalascraper.model._
 
+
+
 class RssFinderService(domainName: String) {
 
   val browser = JsoupBrowser()
