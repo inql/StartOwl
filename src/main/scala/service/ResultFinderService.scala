@@ -56,7 +56,7 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
 
       def getDescription: String = imgTagPattern.replaceAllIn(entry.getDescription.getValue,"").replaceAll(htmlTagPattern.regex,"").trim
 
-      def getResultScore: Int = searchMode.score(keywords, getDescription)
+      def getResultScore: Int = searchMode.score(keywords, entry)
 
       def checkImage(uri:String) : String = {
         try{
