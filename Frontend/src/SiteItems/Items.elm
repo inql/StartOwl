@@ -128,6 +128,11 @@ update msg model =
             )
 
 
+addNewCategory : String -> List String -> Model -> Model
+addNewCategory name tags model =
+    model ++ [ Section (Category (List.length model + 1) name tags [] Loading) ]
+
+
 filterCategories : List Item -> List Category
 filterCategories items =
     items

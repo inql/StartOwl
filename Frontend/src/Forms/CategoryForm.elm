@@ -12,7 +12,6 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import SiteItems.Categories exposing (..)
 
 
 type alias Tags =
@@ -38,7 +37,7 @@ init =
     ( Model "" [] "", Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe Category )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe Model )
 update msg model =
     case msg of
         UpdateTitle newTitle ->
@@ -51,12 +50,7 @@ update msg model =
             ( { model | currentTag = String.toUpper newTagVal }, Cmd.none, Nothing )
 
         SubmitForm ->
-            ( { model | title = "", tags = [] }, Cmd.none, Just (createNewCategory model) )
-
-
-createNewCategory : Model -> Category
-createNewCategory model =
-    Category -1 model.title model.tags [] Loading
+            ( { model | title = "", tags = [] }, Cmd.none, Just model )
 
 
 view : Model -> Html Msg

@@ -93,7 +93,7 @@ update msg model =
                         Just cat ->
                             let
                                 newItems =
-                                    model.items ++ [ Section (Category (List.length model.items) cat.name cat.tags [] cat.status) ]
+                                    addNewCategory cat.title cat.tags model.items
                             in
                             ( newItems, storeItems (encodeItems newItems) )
 
@@ -162,7 +162,3 @@ showSettings model =
     div []
         [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
         ]
-
-
-
--- PORTS
