@@ -35,6 +35,7 @@ libraryDependencies ++= {
     "com.rometools" % "rome" % "1.8.1",
     "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
     "net.ruippeixotog" %% "scala-scraper" % "2.2.0",
+    "org.apache.httpcomponents" % "httpclient" % "4.5.10",
     "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.26" % Test,
     "org.scalamock" %% "scalamock" % "4.4.0" % Test
   )
