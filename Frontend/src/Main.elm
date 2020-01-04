@@ -16,19 +16,17 @@ import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, style, value)
 import Html.Events exposing (onClick, onInput)
-import Http
 import Json.Decode exposing (Decoder, field, map2, map3, string)
 import Ports exposing (..)
 import SiteItems.Categories exposing (Category)
 import SiteItems.Items exposing (..)
-import Task
-import Time
 
 
 type alias Model =
     { name : String
     , items : SiteItems.Items.Model
     , categoryForm : Forms.CategoryForm.Model
+    , sourceWebsites : List String
     , popoverState : Popover.State
     }
 
@@ -51,12 +49,12 @@ init ( name, loadedItems ) =
                     SiteItems.Items.decodeItems i
 
                 Nothing ->
-                    ( [], Cmd.none )
+                    ( SiteItems.Items.Model [] [], Cmd.none )
 
         ( form, formCmd ) =
             Forms.CategoryForm.init
     in
-    ( Model name items form Popover.initialState
+    ( Model name items form [] Popover.initialState
     , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd ]
     )
 
@@ -95,7 +93,7 @@ update msg model =
                                 newItems =
                                     addNewCategory cat.title cat.tags model.items
                             in
-                            ( newItems, storeItems (encodeItems newItems) )
+                            ( newItems, storeItems (encodeCategories newItems) )
 
                         Nothing ->
                             ( model.items, Cmd.none )

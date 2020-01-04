@@ -27,12 +27,7 @@ recordsDecoder =
 decodeRecord : Decoder Record
 decodeRecord =
     map4 Record
-        (field "uri"
-            string
-        )
-        (field
-            "title"
-            string
-        )
+        (field "uri" string)
+        (field "title" string)
         (field "description" string)
         (field "imageUrl" (list string))
