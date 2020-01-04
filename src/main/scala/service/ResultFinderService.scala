@@ -3,14 +3,17 @@ package service
 import java.io.FileNotFoundException
 import java.net.{MalformedURLException, URL}
 
+import akka.http.javadsl.Http
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
-import com.rometools.rome.io.{SyndFeedInput, XmlReader}
+import com.rometools.rome.io.{ParsingFeedException, SyndFeedInput, XmlReader}
 import model.{ApiSearchResult, SearchMode}
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import org.xml.sax.InputSource
 import util.AkkaSystemUtils
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters.asScalaBuffer
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 import scala.util.matching.Regex
 
 class ResultFinderService(val domain: Option[String],val keywords: List[String],val searchMode: SearchMode) extends AkkaSystemUtils {
@@ -30,8 +33,10 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
           throw new IllegalArgumentException
         ))
 
+      val urlConnection = feedUrl.openConnection()
+
       val input = new SyndFeedInput
-      val feed: SyndFeed = input.build(new XmlReader(feedUrl))
+      val feed: SyndFeed = input.build(new XmlReader(urlConnection))
       val entries = asScalaBuffer(feed.getEntries).toVector
 
       getAllResults(keywords,entries, searchMode)
