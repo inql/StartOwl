@@ -18,6 +18,14 @@ jobs:
           java-version: 1.8
       - name: Set up Docker
         run: curl -sSL https://get.docker.com/ | sh
+      - name: Login to DockerHub
+#        env:
+#          secret_email: ${{ secrets.SecretEmail }}
+#          secret_password: ${{ secrets.SecretPassword }}
+#          secret_username: ${{ secrets.UserName }}
+        run: docker login -e dbinkus96@gmail.com -p eEkXbAV8YN99FYN -u inql
+      - name: Change permissions for .docker directory
+        run: chown "$USER":"$USER" /home/"$USER"/.docker -R
       - name: Push API to DockerHub
         env:
           TZ: Europe/Warsaw
