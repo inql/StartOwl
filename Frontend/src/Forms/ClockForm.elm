@@ -1,18 +1,11 @@
 module Forms.ClockForm exposing (..)
 
-import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
-import Bootstrap.CDN as CDN
-import Bootstrap.Card as Card
-import Bootstrap.Card.Block as Block
-import Bootstrap.Dropdown as Dropdown
-import Bootstrap.General.HAlign as HAlign
-import Bootstrap.Grid as Grid
-import Bootstrap.Text as Text
-import Bootstrap.Utilities.Spacing as Spacing
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (on, onClick, onInput)
+import List.Selection exposing (Selection)
 import Time
 import TimeZone exposing (..)
 
@@ -20,20 +13,18 @@ import TimeZone exposing (..)
 type alias Model =
     { name : String
     , zone : Time.Zone
-    , dropDownState : Dropdown.State
     }
 
 
 type Msg
     = UpdateName String
-    | UpdateTimeZone Time.Zone
+    | UpdateTimeZone String
     | SubmitForm
-    | MyDrop1Msg Dropdown.State
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" defaultTimeZone Dropdown.initialState
+    ( Model "" defaultTimeZone
     , Cmd.none
     )
 
@@ -43,15 +34,16 @@ defaultTimeZone =
     europe__warsaw ()
 
 
-possibleTimeZones : List Time.Zone
+possibleTimeZones : Dict String Time.Zone
 possibleTimeZones =
-    [ europe__london (), europe__warsaw (), america__new_york () ]
+    [ ( "Londyn", europe__london () ), ( "Warszawa", europe__warsaw () ), ( "Nowy York", america__new_york () ), ( "Tokio", asia__tokyo () ) ]
+        |> List.sortBy Tuple.first
+        |> Dict.fromList
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Dropdown.subscriptions model.dropDownState MyDrop1Msg ]
+    Sub.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe Model )
@@ -60,17 +52,27 @@ update msg model =
         UpdateName newName ->
             ( { model | name = newName }, Cmd.none, Nothing )
 
-        UpdateTimeZone newZone ->
-            ( { model | zone = newZone }, Cmd.none, Nothing )
+        UpdateTimeZone keyNewZone ->
+            ( { model
+                | zone =
+                    case Dict.get keyNewZone possibleTimeZones of
+                        Just val ->
+                            val
 
-        SubmitForm ->
-            ( Tuple.first init, Cmd.none, Just model )
-
-        MyDrop1Msg state ->
-            ( { model | dropDownState = state }
+                        Nothing ->
+                            defaultTimeZone
+              }
             , Cmd.none
             , Nothing
             )
+
+        SubmitForm ->
+            case validateNewClock model of
+                True ->
+                    ( Tuple.first init, Cmd.none, Just model )
+
+                _ ->
+                    ( model, Cmd.none, Nothing )
 
 
 view : Model -> Html Msg
@@ -84,22 +86,14 @@ displayForm model =
         [ input [ placeholder "name", value model.name, onInput UpdateName ] []
         , br [] []
         , br [] []
-        , div []
-            [ Dropdown.dropdown
-                model.dropDownState
-                { options = []
-                , toggleMsg = MyDrop1Msg
-                , toggleButton =
-                    Dropdown.toggle [ Button.primary ] [ text "Select time zone" ]
-                , items =
-                    [ Dropdown.buttonItem [ onClick (UpdateTimeZone (europe__warsaw ())) ] [ text "Polska" ]
-                    , Dropdown.buttonItem [ onClick (UpdateTimeZone (america__new_york ())) ] [ text "New York" ]
-                    ]
-                }
-
-            -- etc
-            ]
+        , select [ onInput UpdateTimeZone ]
+            (possibleTimeZones |> Dict.toList |> List.map (\x -> Tuple.first x) |> List.map (\x -> option [ value x ] [ text x ]))
         , Button.button
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
         ]
+
+
+validateNewClock : Model -> Bool
+validateNewClock model =
+    model.name |> String.isEmpty |> not

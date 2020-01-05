@@ -74,7 +74,10 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map UpdateItems (SiteItems.Items.subscriptions model.items)
+    Sub.batch
+        [ Sub.map UpdateItems (SiteItems.Items.subscriptions model.items)
+        , Sub.map ClockFormMsg (Forms.ClockForm.subscriptions model.clockForm)
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

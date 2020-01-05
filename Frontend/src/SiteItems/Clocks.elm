@@ -73,13 +73,13 @@ displayClock : Clock -> Html Msg
 displayClock clock =
     let
         hour =
-            String.fromInt (Time.toHour clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toHour clock.zone clock.time))
 
         minute =
-            String.fromInt (Time.toMinute clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toMinute clock.zone clock.time))
 
         second =
-            String.fromInt (Time.toSecond clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toSecond clock.zone clock.time))
     in
     div []
         [ text clock.title
