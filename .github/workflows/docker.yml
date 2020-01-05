@@ -23,7 +23,7 @@ jobs:
 #          secret_email: ${{ secrets.SecretEmail }}
 #          secret_password: ${{ secrets.SecretPassword }}
 #          secret_username: ${{ secrets.UserName }}
-        run: docker login -e dbinkus96@gmail.com -p eEkXbAV8YN99FYN -u inql
+        run: docker login -p eEkXbAV8YN99FYN -u inql
       - name: Change permissions for .docker directory
         run: chown "$USER":"$USER" /home/"$USER"/.docker -R
       - name: Push API to DockerHub
