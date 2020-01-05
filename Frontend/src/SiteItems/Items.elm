@@ -6,16 +6,12 @@ import Json.Decode as D
 import Json.Encode as E
 import SiteItems.Categories exposing (..)
 import SiteItems.Clocks exposing (..)
+import Time exposing (..)
 
 
 type Item
     = Section Category
     | CustomClock Clock
-
-
-sampleItemClock : Item
-sampleItemClock =
-    CustomClock (Tuple.first (SiteItems.Clocks.init 0))
 
 
 type Msg
@@ -36,7 +32,7 @@ init =
         ( sampleItemCategory, catCmd ) =
             SiteItems.Categories.init 1
     in
-    ( Model [] [ sampleClock ]
+    ( Model [] []
     , Cmd.batch [ Cmd.map (CategoryMsg 1) catCmd ]
     )
 
@@ -87,6 +83,7 @@ update msg model =
                                 else
                                     cat
                             )
+                        |> List.filter (\x -> x.status /= SiteItems.Categories.Delete)
               }
             , Cmd.map (CategoryMsg id) cmdMsg
             )
@@ -95,7 +92,14 @@ update msg model =
             ( { model
                 | clocks =
                     model.clocks
-                        |> List.map (\x -> Tuple.first (SiteItems.Clocks.update message x))
+                        |> List.map
+                            (\x ->
+                                if x.id == id then
+                                    Tuple.first (SiteItems.Clocks.update message x)
+
+                                else
+                                    x
+                            )
               }
             , Cmd.none
             )
@@ -110,14 +114,28 @@ update msg model =
             )
 
 
+getNextId : Model -> Int
+getNextId model =
+    case getItemListWithId model |> List.reverse |> List.head of
+        Just x ->
+            Tuple.first x + 1
+
+        Nothing ->
+            1
+
+
 addNewCategory : String -> List String -> Model -> Model
 addNewCategory name tags model =
-    { model | categories = model.categories ++ [ Category (List.length model.categories + 1) name tags [] Loading ] }
+    { model | categories = model.categories ++ [ Category (getNextId model) name tags [] Loading ] }
 
 
-addNewClock : Model -> Model
-addNewClock model =
-    { model | clocks = model.clocks ++ [ sampleClock ] }
+addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
+addNewClock name timezone model =
+    let
+        ( newClock, cmd ) =
+            SiteItems.Clocks.init (getNextId model) name timezone
+    in
+    ( { model | clocks = model.clocks ++ [ newClock ] }, Cmd.map (ClockMsg newClock.id) cmd )
 
 
 filterCategories : List Item -> List Category
@@ -134,19 +152,26 @@ filterCategories items =
             )
 
 
-view : Model -> Html Msg
-view model =
+getItemListWithId : Model -> List ( Int, Item )
+getItemListWithId model =
     let
         categoriesWithId =
             model.categories |> List.map (\x -> ( x.id, Section x ))
 
         clocksWithId =
             model.clocks |> List.map (\x -> ( x.id, CustomClock x ))
-
-        items =
-            categoriesWithId ++ clocksWithId |> List.sortBy Tuple.first |> List.map (\x -> Tuple.second x)
     in
-    displayItems items
+    categoriesWithId ++ clocksWithId |> List.sortBy Tuple.first
+
+
+getItemList : Model -> List Item
+getItemList model =
+    getItemListWithId model |> List.map (\x -> Tuple.second x)
+
+
+view : Model -> Html Msg
+view model =
+    displayItems (getItemList model)
 
 
 displayItems : List Item -> Html Msg
@@ -190,7 +215,7 @@ decodeItems jsonString =
             ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading)) [], Cmd.none )
 
         Err _ ->
-            ( Model [] [ sampleClock ], Cmd.none )
+            ( Model [] [], Cmd.none )
 
 
 decodeCategories : D.Decoder (List SimplifiedCategory)

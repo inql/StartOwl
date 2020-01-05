@@ -8,14 +8,15 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8001/searchrequest/"
+    "http://localhost:8002/searchrequest/"
 
 
 preparePostJsonForCategory : List String -> Encode.Value
 preparePostJsonForCategory tags =
     Encode.object
         [ ( "keyword", Encode.list Encode.string tags )
-        , ( "domain", Encode.string "https://www.polsatnews.pl/rss/wszystkie.xml" )
+        , ( "domains", Encode.list Encode.string [ "https://www.tvn24.pl", "https://www.polsatnews.pl" ] )
+        , ( "searchModeInput", Encode.string "contains" )
         ]
 
 

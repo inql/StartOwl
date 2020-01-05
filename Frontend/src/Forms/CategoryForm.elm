@@ -50,7 +50,12 @@ update msg model =
             ( { model | currentTag = String.toUpper newTagVal }, Cmd.none, Nothing )
 
         SubmitForm ->
-            ( { model | title = "", tags = [] }, Cmd.none, Just model )
+            case validateForm model of
+                True ->
+                    ( { model | title = "", tags = [] }, Cmd.none, Just model )
+
+                _ ->
+                    ( model, Cmd.none, Nothing )
 
 
 view : Model -> Html Msg
@@ -75,6 +80,11 @@ displayForm model =
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
         ]
+
+
+validateForm : Model -> Bool
+validateForm model =
+    (model.title |> String.isEmpty |> not) && (model.tags |> List.isEmpty |> not)
 
 
 
