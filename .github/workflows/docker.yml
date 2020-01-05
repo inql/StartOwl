@@ -30,3 +30,9 @@ jobs:
         env:
           TZ: Europe/Warsaw
         run: sbt docker:publish
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: test
+          aws-secret-access-key: test
+          aws-region: us-east-2
