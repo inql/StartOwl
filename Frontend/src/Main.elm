@@ -12,6 +12,7 @@ import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Forms.CategoryForm
+import Forms.ClockForm exposing (..)
 import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, style, value)
@@ -26,6 +27,7 @@ type alias Model =
     { name : String
     , items : SiteItems.Items.Model
     , categoryForm : Forms.CategoryForm.Model
+    , clockForm : Forms.ClockForm.Model
     , sourceWebsites : List String
     , popoverState : Popover.State
     }
@@ -53,22 +55,29 @@ init ( name, loadedItems ) =
 
         ( form, formCmd ) =
             Forms.CategoryForm.init
+
+        ( clockForm, clockFormCmd ) =
+            Forms.ClockForm.init
     in
-    ( Model name items form [] Popover.initialState
-    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd ]
+    ( Model name items form clockForm [] Popover.initialState
+    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd ]
     )
 
 
 type Msg
     = UpdateItems SiteItems.Items.Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
+    | ClockFormMsg Forms.ClockForm.Msg
     | UpdateName String
     | PopoverMsg Popover.State
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map UpdateItems (SiteItems.Items.subscriptions model.items)
+    Sub.batch
+        [ Sub.map UpdateItems (SiteItems.Items.subscriptions model.items)
+        , Sub.map ClockFormMsg (Forms.ClockForm.subscriptions model.clockForm)
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,7 +88,12 @@ update msg model =
                 ( updatedItems, givenCommand ) =
                     SiteItems.Items.update m model.items
             in
-            ( { model | items = updatedItems }, Cmd.map UpdateItems givenCommand )
+            ( { model | items = updatedItems }
+            , Cmd.batch
+                [ Cmd.map UpdateItems givenCommand
+                , storeItems (encodeCategories updatedItems)
+                ]
+            )
 
         CategoryFormMsg m ->
             let
@@ -99,6 +113,25 @@ update msg model =
                             ( model.items, Cmd.none )
             in
             ( { model | categoryForm = updatedForm, items = itemsAfterAdding }, Cmd.batch [ Cmd.map CategoryFormMsg givenCommand, commandAfterAdd ] )
+
+        ClockFormMsg m ->
+            let
+                ( updatedForm, givenCommand, possibleNewCommand ) =
+                    Forms.ClockForm.update m model.clockForm
+
+                ( itemsAfterAdding, commandAfterAdd ) =
+                    case possibleNewCommand of
+                        Just newClock ->
+                            let
+                                ( newItems, cmdAfterAdding ) =
+                                    addNewClock newClock.name newClock.zone model.items
+                            in
+                            ( newItems, Cmd.batch [ storeItems (encodeClocks newItems), Cmd.map UpdateItems cmdAfterAdding ] )
+
+                        Nothing ->
+                            ( model.items, Cmd.none )
+            in
+            ( { model | clockForm = updatedForm, items = itemsAfterAdding }, Cmd.batch [ Cmd.map ClockFormMsg givenCommand, commandAfterAdd ] )
 
         UpdateName newName ->
             ( { model | name = newName }, storeName newName )
@@ -125,6 +158,7 @@ view model =
             ]
         , Html.map UpdateItems (SiteItems.Items.view model.items)
         , Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
+        , Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
         , addFooter
         ]
 

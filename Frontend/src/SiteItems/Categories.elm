@@ -25,6 +25,7 @@ type Status
     | Error Http.Error
     | Good
     | NoMoreResults
+    | Delete    
 
 
 type alias Category =
@@ -52,7 +53,7 @@ type alias Model =
 type Msg
     = LoadMoreRecords
     | GotResult (Result Http.Error (List Record))
-
+    | RemoveCategory 
 
 init : Int -> ( Category, Cmd Msg )
 init i =
@@ -78,6 +79,8 @@ update msg model =
                 Err err ->
                     ( { model | status = Error err }, Cmd.none )
 
+        RemoveCategory -> 
+            ({model | status = Delete}, Cmd.none)
 
 loadResults : Model -> Cmd Msg
 loadResults model =
@@ -109,6 +112,7 @@ displayCategory category =
             , Button.button
                 [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
                 [ text "Load more" ]
+            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
             ]
         |> Card.view
 
@@ -165,6 +169,10 @@ statusToString status =
 
         NoMoreResults ->
             "No new results"
+
+        Delete -> 
+            "Removing ..."
+        
 
 
 encodeCategory : Category -> E.Value

@@ -18,11 +18,7 @@ import Http
 import Json.Encode as E
 import Task
 import Time
-
-
-sampleClock : Clock
-sampleClock =
-    Clock 2 "Polska" Time.utc (Time.millisToPosix 0)
+import TimeZone exposing (..)
 
 
 type alias Clock =
@@ -40,13 +36,12 @@ type alias Model =
 type Msg
     = Tick Time.Posix
     | AdjustTimeZone Time.Zone
-    | InitializeClock
 
 
-init : Int -> ( Model, Cmd Msg )
-init _ =
-    ( sampleClock
-    , Task.perform AdjustTimeZone Time.here
+init : Int -> String -> Time.Zone -> ( Model, Cmd Msg )
+init id name zone =
+    ( Clock id name zone (Time.millisToPosix 0)
+    , Task.perform AdjustTimeZone (Task.succeed zone)
     )
 
 
@@ -63,9 +58,6 @@ update msg model =
             , Cmd.none
             )
 
-        InitializeClock ->
-            init 1
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -81,13 +73,13 @@ displayClock : Clock -> Html Msg
 displayClock clock =
     let
         hour =
-            String.fromInt (Time.toHour clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toHour clock.zone clock.time))
 
         minute =
-            String.fromInt (Time.toMinute clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toMinute clock.zone clock.time))
 
         second =
-            String.fromInt (Time.toSecond clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toSecond clock.zone clock.time))
     in
     div []
         [ text clock.title
