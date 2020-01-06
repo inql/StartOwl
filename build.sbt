@@ -20,6 +20,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-parsing" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
+    "com.typesafe.akka" %% "akka-remote" % akkaVersion,
     "org.scalactic" %% "scalactic" % "3.1.0",
     "org.scalatest" %% "scalatest" % "3.0.4" % "test, it",
     "org.jsoup" % "jsoup" % "1.8.3",
@@ -43,5 +44,9 @@ libraryDependencies ++= {
 
 fork := true
 enablePlugins(JavaAppPackaging)
-
-lazy val root = (project in file(".")).configs(IntegrationTest).settings(Defaults.itSettings: _*)
+lazy val root = (project in file(".")).configs(IntegrationTest).settings(Defaults.itSettings: _*).enablePlugins(JavaAppPackaging).enablePlugins(DockerPlugin)
+dockerRepository := Some("inql")
+name := "start-owl-api"
+dockerUpdateLatest := true
+dockerBaseImage := "openjdk:8"
+dockerExposedPorts := Seq(8001)
