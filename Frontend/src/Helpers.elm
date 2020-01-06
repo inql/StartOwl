@@ -1,6 +1,31 @@
-module Helpers exposing (errorToString)
+module Helpers exposing (..)
 
+import Dict exposing (Dict)
 import Http exposing (..)
+import Time
+import TimeZone exposing (..)
+
+
+defaultTimeZone : Time.Zone
+defaultTimeZone =
+    europe__warsaw ()
+
+
+possibleTimeZones : Dict String Time.Zone
+possibleTimeZones =
+    [ ( "", europe__warsaw () ), ( "Londyn", europe__london () ), ( "Warszawa", europe__warsaw () ), ( "Nowy York", america__new_york () ), ( "Tokio", asia__tokyo () ) ]
+        |> List.sortBy Tuple.first
+        |> Dict.fromList
+
+
+getTimeZoneForName : String -> Time.Zone
+getTimeZoneForName key =
+    case Dict.get key possibleTimeZones of
+        Just val ->
+            val
+
+        Nothing ->
+            defaultTimeZone
 
 
 errorToString : Http.Error -> String

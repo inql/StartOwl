@@ -42,13 +42,21 @@ main =
         }
 
 
-init : ( String, Maybe String ) -> ( Model, Cmd Msg )
-init ( name, loadedItems ) =
+init : ( String, Maybe String, Maybe String ) -> ( Model, Cmd Msg )
+init ( name, loadedItems, loadedClocks ) =
     let
-        ( items, itemsCmd ) =
+        ( categories, categoriesCmd ) =
             case loadedItems of
                 Just i ->
-                    SiteItems.Items.decodeItems i
+                    SiteItems.Items.decodeCategories i
+
+                Nothing ->
+                    ( SiteItems.Items.Model [] [], Cmd.none )
+
+        ( clocks, clockCmd ) =
+            case loadedClocks of
+                Just i ->
+                    SiteItems.Items.decodeClocks i
 
                 Nothing ->
                     ( SiteItems.Items.Model [] [], Cmd.none )
@@ -58,9 +66,12 @@ init ( name, loadedItems ) =
 
         ( clockForm, clockFormCmd ) =
             Forms.ClockForm.init
+
+        items =
+            SiteItems.Items.Model categories.categories clocks.clocks
     in
     ( Model name items form clockForm [] Popover.initialState
-    , Cmd.batch [ Cmd.map UpdateItems itemsCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd ]
+    , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
     )
 
 
@@ -91,7 +102,7 @@ update msg model =
             ( { model | items = updatedItems }
             , Cmd.batch
                 [ Cmd.map UpdateItems givenCommand
-                , storeItems (encodeCategories updatedItems)
+                , storeCategories (encodeCategories updatedItems)
                 ]
             )
 
@@ -107,7 +118,7 @@ update msg model =
                                 newItems =
                                     addNewCategory cat.title cat.tags model.items
                             in
-                            ( newItems, storeItems (encodeCategories newItems) )
+                            ( newItems, storeCategories (encodeCategories newItems) )
 
                         Nothing ->
                             ( model.items, Cmd.none )
@@ -126,7 +137,7 @@ update msg model =
                                 ( newItems, cmdAfterAdding ) =
                                     addNewClock newClock.name newClock.zone model.items
                             in
-                            ( newItems, Cmd.batch [ storeItems (encodeClocks newItems), Cmd.map UpdateItems cmdAfterAdding ] )
+                            ( newItems, Cmd.batch [ storeClocks (encodeClocks newItems), Cmd.map UpdateItems cmdAfterAdding ] )
 
                         Nothing ->
                             ( model.items, Cmd.none )

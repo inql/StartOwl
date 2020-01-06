@@ -90,4 +90,4 @@ displayClock clock =
 encodeClock : Clock -> E.Value
 encodeClock clock =
     E.object
-        [ ( "id", E.int clock.id ) ]
+        [ ( "id", E.int clock.id ), ( "title", E.string clock.title ) ]

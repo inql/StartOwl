@@ -1,6 +1,7 @@
 module SiteItems.Items exposing (..)
 
 import Bootstrap.Grid as Grid
+import Helpers exposing (getTimeZoneForName)
 import Html exposing (..)
 import Json.Decode as D
 import Json.Encode as E
@@ -191,9 +192,7 @@ displayItem item =
 
 encodeCategories : Model -> List E.Value
 encodeCategories model =
-    model.categories
-        |> List.map
-            (\x -> encodeCategory x)
+    model.categories |> List.map (\x -> encodeCategory x)
 
 
 encodeClocks : Model -> List E.Value
@@ -208,9 +207,15 @@ type alias SimplifiedCategory =
     }
 
 
-decodeItems : String -> ( Model, Cmd Msg )
-decodeItems jsonString =
-    case D.decodeString decodeCategories jsonString of
+type alias SimplifiedClock =
+    { id : Int
+    , title : String
+    }
+
+
+decodeCategories : String -> ( Model, Cmd Msg )
+decodeCategories jsonString =
+    case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
             ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading)) [], Cmd.none )
 
@@ -218,9 +223,33 @@ decodeItems jsonString =
             ( Model [] [], Cmd.none )
 
 
-decodeCategories : D.Decoder (List SimplifiedCategory)
-decodeCategories =
-    D.list decodeCat
+decodeClocks : String -> ( Model, Cmd Msg )
+decodeClocks jsonString =
+    case D.decodeString (D.list decodeClock) jsonString of
+        Ok val ->
+            let
+                clocksWithCmds =
+                    val
+                        |> List.map (\x -> SiteItems.Clocks.init x.id x.title (getTimeZoneForName x.title))
+                        |> List.map (\( x, y ) -> ( x, Cmd.map (ClockMsg x.id) y ))
+
+                clocks =
+                    clocksWithCmds |> List.map (\x -> Tuple.first x)
+
+                cmds =
+                    clocksWithCmds |> List.map (\x -> Tuple.second x)
+            in
+            ( Model [] clocks, Cmd.batch cmds )
+
+        Err _ ->
+            ( Model [] [], Cmd.none )
+
+
+decodeClock : D.Decoder SimplifiedClock
+decodeClock =
+    D.map2 SimplifiedClock
+        (D.field "id" D.int)
+        (D.field "title" D.string)
 
 
 decodeCat : D.Decoder SimplifiedCategory

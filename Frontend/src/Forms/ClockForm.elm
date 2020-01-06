@@ -2,6 +2,7 @@ module Forms.ClockForm exposing (..)
 
 import Bootstrap.Button as Button
 import Dict exposing (Dict)
+import Helpers exposing (defaultTimeZone, possibleTimeZones)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput)
@@ -29,18 +30,6 @@ init =
     ( Model "New clock" defaultTimeZone Nothing
     , Cmd.none
     )
-
-
-defaultTimeZone : Time.Zone
-defaultTimeZone =
-    europe__warsaw ()
-
-
-possibleTimeZones : Dict String Time.Zone
-possibleTimeZones =
-    [ ( "", europe__warsaw () ), ( "Londyn", europe__london () ), ( "Warszawa", europe__warsaw () ), ( "Nowy York", america__new_york () ), ( "Tokio", asia__tokyo () ) ]
-        |> List.sortBy Tuple.first
-        |> Dict.fromList
 
 
 subscriptions : Model -> Sub Msg
