@@ -31,7 +31,7 @@ jobs:
 #          TZ: Europe/Warsaw
 #        run: sbt docker:publish
       - name: foo foo ls
-        run: tree /
+        run: find / -name "task-definition.json"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
