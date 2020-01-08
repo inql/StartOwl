@@ -17,6 +17,7 @@ import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (class, href, style, value)
 import Html.Events as Ev exposing (onClick, onInput)
+import IconManager as Icons
 import Json.Decode exposing (Decoder, field, map2, map3, string)
 import MultiInput
 import Ports exposing (..)
@@ -212,7 +213,9 @@ defaultSeparators =
 view : Model -> Html Msg
 view model =
     div [ class "text-center" ]
-        [ CDN.stylesheet
+        [ List.range 1 4
+            |> List.map (\_ -> br [] [])
+            |> div []
         , div []
             [ div
                 [ style "position" "absolute"
@@ -222,9 +225,10 @@ view model =
                 [ showSettings model ]
             , h1 []
                 [ text "Hello"
-                , Badge.badgeSuccess [ Spacing.ml1 ] [ text model.name ]
+                , Badge.badgeDark [ Spacing.ml1 ] [ text model.name ]
                 ]
             ]
+        , br [] []
         , Html.map UpdateItems (SiteItems.Items.view model.items)
         , showForm model
         , addFooter
@@ -271,15 +275,17 @@ showSettings model =
     div []
         [ Button.button
             [ Button.outlineSuccess, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
-            [ text "Settings" ]
+            [ Icons.settingsIcon ]
         , Modal.config (SettingsMsg CloseModal)
             -- Configure the modal to use animations providing the new AnimateModal msg
             |> Modal.withAnimation AnimateModal
-            |> Modal.small
-            |> Modal.h3 [] [ text "Settings" ]
+            |> Modal.large
+            |> Modal.h1 [] [ text "Settings" ]
             |> Modal.body []
-                [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
-                , Badge.badgeDark [] [ showUrls model ]
+                [ text "Your name "
+                , input [ value model.name, onInput UpdateName ] []
+                , br [] []
+                , showUrls model
                 ]
             |> Modal.footer []
                 [ Button.button

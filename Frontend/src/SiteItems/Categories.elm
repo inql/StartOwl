@@ -17,6 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
 import Http
+import IconManager as Icons
 import Json.Encode as E
 import SiteItems.Record exposing (..)
 
@@ -131,6 +132,7 @@ displayCategory category =
                     Accordion.header [] <|
                         Accordion.toggle []
                             [ text category.name
+                            , Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveCategory, class "delete_button" ] ] [ Icons.deleteIcon ]
                             ]
                 , blocks =
                     [ Accordion.block []
@@ -142,7 +144,6 @@ displayCategory category =
                             , Button.button
                                 [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
                                 [ text "Load more" ]
-                            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
                             ]
                         ]
                     ]
