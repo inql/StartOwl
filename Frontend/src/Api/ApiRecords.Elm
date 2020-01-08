@@ -8,7 +8,7 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8002/searchrequest/"
+    "http://ec2-18-220-25-17.us-east-2.compute.amazonaws.com:8001/searchrequest/"
 
 
 preparePostJsonForCategory : List String -> Encode.Value

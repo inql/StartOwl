@@ -114,4 +114,4 @@ displayClock mclock =
 
 validateNewClock : Model -> Bool
 validateNewClock model =
-    model.name |> String.isEmpty |> not
+    model.name |> String.startsWith "New clock" |> not

@@ -8,7 +8,7 @@ import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
 import Bootstrap.Popover as Popover
-import Bootstrap.Text as Text
+import Bootstrap.Tab as Tab
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Forms.CategoryForm
@@ -30,6 +30,7 @@ type alias Model =
     , clockForm : Forms.ClockForm.Model
     , sourceWebsites : List String
     , popoverState : Popover.State
+    , tabState : Tab.State
     }
 
 
@@ -70,7 +71,7 @@ init ( name, loadedItems, loadedClocks ) =
         items =
             SiteItems.Items.Model categories.categories clocks.clocks
     in
-    ( Model name items form clockForm [] Popover.initialState
+    ( Model name items form clockForm [] Popover.initialState Tab.initialState
     , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
     )
 
@@ -81,6 +82,7 @@ type Msg
     | ClockFormMsg Forms.ClockForm.Msg
     | UpdateName String
     | PopoverMsg Popover.State
+    | TabMsg Tab.State
 
 
 subscriptions : Model -> Sub Msg
@@ -150,6 +152,11 @@ update msg model =
         PopoverMsg state ->
             ( { model | popoverState = state }, Cmd.none )
 
+        TabMsg state ->
+            ( { model | tabState = state }
+            , Cmd.none
+            )
+
 
 view : Model -> Html Msg
 view model =
@@ -168,8 +175,7 @@ view model =
                 ]
             ]
         , Html.map UpdateItems (SiteItems.Items.view model.items)
-        , Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
-        , Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
+        , showForm model
         , addFooter
         ]
 
@@ -198,6 +204,31 @@ addPopover model =
         |> Popover.content []
             [ showSettings model ]
         |> Popover.view model.popoverState
+
+
+showForm : Model -> Html Msg
+showForm model =
+    Tab.config TabMsg
+        |> Tab.pills
+        |> Tab.items
+            [ Tab.item
+                { id = "tabItem1"
+                , link = Tab.link [] [ text "Add new Category" ]
+                , pane =
+                    Tab.pane [ Spacing.mt3 ]
+                        [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
+                        ]
+                }
+            , Tab.item
+                { id = "tabItem2"
+                , link = Tab.link [] [ text "Add new Clock" ]
+                , pane =
+                    Tab.pane [ Spacing.mt3 ]
+                        [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
+                        ]
+                }
+            ]
+        |> Tab.view model.tabState
 
 
 showSettings : Model -> Html Msg
