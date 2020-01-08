@@ -1,6 +1,7 @@
 module SiteItems.Categories exposing (..)
 
 import Api.ApiRecords exposing (..)
+import Bootstrap.Accordion as Accordion
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
@@ -35,6 +36,7 @@ type alias Category =
     , records : List Record
     , status : Status
     , urls : List String
+    , accordionState : Accordion.State
     }
 
 
@@ -42,9 +44,14 @@ recordsInRow =
     2
 
 
+idToStr : Int -> String
+idToStr id =
+    id |> String.fromInt
+
+
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good []
+    Category id "Sample name" [] [] Good [] (Accordion.initialStateCardOpen (idToStr id))
 
 
 type alias Model =
@@ -56,11 +63,17 @@ type Msg
     | GotResult (Result Http.Error (List Record))
     | RemoveCategory
     | UpdateUrls (List String)
+    | AccordionMsg Accordion.State
 
 
 init : Int -> ( Category, Cmd Msg )
 init i =
     ( sampleCategory i, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Accordion.subscriptions model.accordionState AccordionMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -88,6 +101,9 @@ update msg model =
         UpdateUrls newUrls ->
             ( { model | urls = newUrls }, Cmd.none )
 
+        AccordionMsg state ->
+            ( { model | accordionState = state }, Cmd.none )
+
 
 loadResults : List String -> Model -> Cmd Msg
 loadResults urls model =
@@ -105,23 +121,34 @@ view model =
 
 displayCategory : Category -> Html Msg
 displayCategory category =
-    Card.config [ Card.outlinePrimary, Card.align Text.alignXsCenter, Card.attrs [ Spacing.mb3 ] ]
-        |> Card.headerH2 [ class "text-center" ]
-            [ text category.name
+    Accordion.config AccordionMsg
+        |> Accordion.withAnimation
+        |> Accordion.cards
+            [ Accordion.card
+                { id = category.id |> idToStr
+                , options = []
+                , header =
+                    Accordion.header [] <|
+                        Accordion.toggle []
+                            [ text category.name
+                            ]
+                , blocks =
+                    [ Accordion.block []
+                        [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
+                        , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
+                        , Block.link []
+                            [ text (statusToString category.status)
+                            , br [] []
+                            , Button.button
+                                [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
+                                [ text "Load more" ]
+                            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
+                            ]
+                        ]
+                    ]
+                }
             ]
-        |> Card.block []
-            [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
-            , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
-            ]
-        |> Card.footer []
-            [ text (statusToString category.status)
-            , br [] []
-            , Button.button
-                [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
-                [ text "Load more" ]
-            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
-            ]
-        |> Card.view
+        |> Accordion.view category.accordionState
 
 
 split : Int -> List Record -> List (List Record)
