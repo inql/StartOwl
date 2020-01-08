@@ -35,9 +35,7 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
       httpGet.addHeader("User-Agent", "Mozilla/5.0")
       val httpResponse = httpClient.execute(httpGet)
       val reader: BufferedReader = new BufferedReader(new InputStreamReader(httpResponse.getEntity.getContent))
-
-      val urlConnection = feedUrl.openConnection()
-
+      
       val input = new SyndFeedInput
       val feed: SyndFeed = input.build(reader)
       val entries = asScalaBuffer(feed.getEntries).toVector
