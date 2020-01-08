@@ -101,6 +101,7 @@ update msg model =
                                 else
                                     x
                             )
+                        |> List.filter (\x -> x.id >= 0)
               }
             , Cmd.none
             )

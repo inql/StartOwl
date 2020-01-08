@@ -36,6 +36,7 @@ type alias Model =
 type Msg
     = Tick Time.Posix
     | AdjustTimeZone Time.Zone
+    | RemoveClock
 
 
 init : Int -> String -> Time.Zone -> ( Model, Cmd Msg )
@@ -58,6 +59,9 @@ update msg model =
             , Cmd.none
             )
 
+        RemoveClock ->
+            ( { model | id = -1 }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -66,7 +70,10 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    displayClock model
+    div []
+        [ displayClock model
+        , Button.button [ Button.warning, Button.attrs [ onClick RemoveClock ] ] [ text "Delete" ]
+        ]
 
 
 displayClock : Clock -> Html Msg

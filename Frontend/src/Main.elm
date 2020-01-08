@@ -105,6 +105,7 @@ update msg model =
             , Cmd.batch
                 [ Cmd.map UpdateItems givenCommand
                 , storeCategories (encodeCategories updatedItems)
+                , storeClocks (encodeClocks updatedItems)
                 ]
             )
 
