@@ -2,6 +2,7 @@ module Helpers exposing (..)
 
 import Dict exposing (Dict)
 import Http exposing (..)
+import Regex exposing (Regex)
 import Time
 import TimeZone exposing (..)
 
@@ -51,3 +52,18 @@ errorToString error =
 
         BadBody errorMessage ->
             errorMessage
+
+
+matches : String -> String -> Bool
+matches regex =
+    let
+        validRegex =
+            Regex.fromString regex
+                |> Maybe.withDefault Regex.never
+    in
+    Regex.findAtMost 1 validRegex >> List.isEmpty >> not
+
+
+defaultSeparators : List String
+defaultSeparators =
+    [ "\n", "\t", " ", "," ]

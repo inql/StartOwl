@@ -25,7 +25,7 @@ type Status
     | Error Http.Error
     | Good
     | NoMoreResults
-    | Delete    
+    | Delete
 
 
 type alias Category =
@@ -53,7 +53,8 @@ type alias Model =
 type Msg
     = LoadMoreRecords
     | GotResult (Result Http.Error (List Record))
-    | RemoveCategory 
+    | RemoveCategory
+
 
 init : Int -> ( Category, Cmd Msg )
 init i =
@@ -79,8 +80,9 @@ update msg model =
                 Err err ->
                     ( { model | status = Error err }, Cmd.none )
 
-        RemoveCategory -> 
-            ({model | status = Delete}, Cmd.none)
+        RemoveCategory ->
+            ( { model | status = Delete }, Cmd.none )
+
 
 loadResults : Model -> Cmd Msg
 loadResults model =
@@ -170,9 +172,8 @@ statusToString status =
         NoMoreResults ->
             "No new results"
 
-        Delete -> 
+        Delete ->
             "Removing ..."
-        
 
 
 encodeCategory : Category -> E.Value

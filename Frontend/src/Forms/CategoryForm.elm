@@ -9,9 +9,16 @@ import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
 import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
+import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes as Attr exposing (..)
+import Html.Events as Ev exposing (onClick, onInput)
+import MultiInput
+import Regex exposing (Regex)
+
+
+inputId =
+    "tags-input"
 
 
 type alias Tags =
@@ -22,19 +29,27 @@ type alias Model =
     { title : String
     , tags : Tags
     , currentTag : String
+    , state : MultiInput.State
     }
 
 
 type Msg
     = UpdateTitle String
-    | UpdateTag String
-    | AddTag
     | SubmitForm
+    | MultiInputMsg MultiInput.Msg
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" [] "", Cmd.none )
+    ( Model "" [] "" (MultiInput.init inputId), Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ MultiInput.subscriptions model.state
+            |> Sub.map MultiInputMsg
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe Model )
@@ -43,12 +58,6 @@ update msg model =
         UpdateTitle newTitle ->
             ( { model | title = newTitle }, Cmd.none, Nothing )
 
-        AddTag ->
-            ( { model | tags = model.tags ++ [ model.currentTag ], currentTag = "" }, Cmd.none, Nothing )
-
-        UpdateTag newTagVal ->
-            ( { model | currentTag = String.toUpper newTagVal }, Cmd.none, Nothing )
-
         SubmitForm ->
             case validateForm model of
                 True ->
@@ -56,6 +65,22 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none, Nothing )
+
+        MultiInputMsg m ->
+            let
+                ( newModel, cmds ) =
+                    updateTags m { separators = defaultSeparators } model MultiInputMsg
+            in
+            ( newModel, cmds, Nothing )
+
+
+updateTags : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
+updateTags msg updateConf model toOuterMsg =
+    let
+        ( nextState, nextItems, nextCmd ) =
+            MultiInput.update updateConf msg model.state model.tags
+    in
+    ( { model | tags = nextItems, state = nextState }, Cmd.map toOuterMsg nextCmd )
 
 
 view : Model -> Html Msg
@@ -68,17 +93,25 @@ displayForm model =
     div []
         [ input [ placeholder "title", value model.title, onInput UpdateTitle ] []
         , br [] []
-        , model.tags |> List.map (\x -> text (x ++ ", ")) |> div []
-        , br [] []
-        , input [ placeholder "tag value", value model.currentTag, onInput UpdateTag ] []
-        , br [] []
-        , Button.button
-            [ Button.secondary, Button.attrs [ onClick AddTag ] ]
-            [ text "Add tag" ]
-        , br [] []
+        , viewTags model
         , Button.button
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
+        ]
+
+
+viewTags : Model -> Html Msg
+viewTags model =
+    Html.div [ Attr.class "example tags" ]
+        [ Html.h2 [] [ Html.text "Tags" ]
+        , MultiInput.view
+            { placeholder = "Add tags"
+            , toOuterMsg = MultiInputMsg
+            , isValid = matches "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+            []
+            model.tags
+            model.state
         ]
 
 
@@ -88,4 +121,4 @@ validateForm model =
 
 
 
--- TO DO VALIDATION
+-- MULTIINPUT

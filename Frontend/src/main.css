@@ -9,6 +9,9 @@
   height: inherit;
 }
 
+@import url("multinputs.css");
+@import url("customInput.css");
+
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;

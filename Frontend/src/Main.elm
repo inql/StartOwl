@@ -15,10 +15,12 @@ import Forms.CategoryForm
 import Forms.ClockForm exposing (..)
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, style, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes as Attr exposing (class, href, style, value)
+import Html.Events as Ev exposing (onClick, onInput)
 import Json.Decode exposing (Decoder, field, map2, map3, string)
+import MultiInput
 import Ports exposing (..)
+import Regex exposing (Regex)
 import SiteItems.Categories exposing (Category)
 import SiteItems.Items exposing (..)
 
@@ -31,6 +33,8 @@ type alias Model =
     , sourceWebsites : List String
     , popoverState : Popover.State
     , tabState : Tab.State
+    , urls : List String
+    , state : MultiInput.State
     }
 
 
@@ -71,7 +75,7 @@ init ( name, loadedItems, loadedClocks ) =
         items =
             SiteItems.Items.Model categories.categories clocks.clocks
     in
-    ( Model name items form clockForm [] Popover.initialState Tab.initialState
+    ( Model name items form clockForm [] Popover.initialState Tab.initialState [] (MultiInput.init "urls-input")
     , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
     )
 
@@ -83,6 +87,7 @@ type Msg
     | UpdateName String
     | PopoverMsg Popover.State
     | TabMsg Tab.State
+    | MultiInputMsg MultiInput.Msg
 
 
 subscriptions : Model -> Sub Msg
@@ -90,6 +95,8 @@ subscriptions model =
     Sub.batch
         [ Sub.map UpdateItems (SiteItems.Items.subscriptions model.items)
         , Sub.map ClockFormMsg (Forms.ClockForm.subscriptions model.clockForm)
+        , MultiInput.subscriptions model.state
+            |> Sub.map MultiInputMsg
         ]
 
 
@@ -157,6 +164,27 @@ update msg model =
             ( { model | tabState = state }
             , Cmd.none
             )
+
+        MultiInputMsg m ->
+            let
+                ( newModel, newCmd ) =
+                    updateUrls m { separators = defaultSeparators } model MultiInputMsg
+            in
+            ( { newModel | urls = newModel.urls |> List.filter (\x -> matches urlsRegex x) }, Cmd.none )
+
+
+updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
+updateUrls msg updateConf model toOuterMsg =
+    let
+        ( nextState, nextUrls, nextCmd ) =
+            MultiInput.update updateConf msg model.state model.urls
+    in
+    ( { model | urls = nextUrls, state = nextState }, Cmd.map toOuterMsg nextCmd )
+
+
+defaultSeparators : List String
+defaultSeparators =
+    [ "\n", "\t", " ", "," ]
 
 
 view : Model -> Html Msg
@@ -236,4 +264,42 @@ showSettings : Model -> Html Msg
 showSettings model =
     div []
         [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
+        , Badge.badgeDark [] [ showUrls model ]
+        ]
+
+
+urlsRegex =
+    ".+\\..+\\..+"
+
+
+showUrls : Model -> Html Msg
+showUrls model =
+    let
+        isValid =
+            matches urlsRegex
+
+        validwebsite =
+            List.filter isValid model.urls
+
+        nvalidwebsite =
+            List.length validwebsite
+
+        maxvalidwebsite =
+            10
+    in
+    Html.div [ Attr.class "example emails" ]
+        [ Html.h2 [] [ Html.text "Source Websites" ]
+        , MultiInput.view
+            { placeholder = "Format : www.example.com", toOuterMsg = MultiInputMsg, isValid = isValid }
+            []
+            model.urls
+            model.state
+        , Html.p [ Attr.class "counter" ]
+            [ Html.text <|
+                "You've introduced ("
+                    ++ String.fromInt nvalidwebsite
+                    ++ "/"
+                    ++ String.fromInt maxvalidwebsite
+                    ++ ") valid websites"
+            ]
         ]

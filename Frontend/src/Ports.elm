@@ -1,4 +1,4 @@
-port module Ports exposing (storeCategories, storeClocks, storeName)
+port module Ports exposing (storeCategories, storeClocks, storeName, storeUrls)
 
 import Json.Encode as E
 
@@ -10,3 +10,6 @@ port storeCategories : List E.Value -> Cmd msg
 
 
 port storeClocks : List E.Value -> Cmd msg
+
+
+port storeUrls : List E.Value -> Cmd msg
