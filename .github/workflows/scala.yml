@@ -1,6 +1,10 @@
 name: Scala API Test
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'feature/**'         # Push events on master branch
+      - 'bugfix/**' # Push events to branches matching refs/heads/mona/octocat
 
 jobs:
   build:

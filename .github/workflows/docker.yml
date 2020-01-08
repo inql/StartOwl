@@ -1,9 +1,8 @@
-name: Push API to Docker
+name: Perform tests on API and publish Docker image on AWS
 
 on:
-  push:
-    branches:
-      - master
+  pull_request:
+    types: [assigned, opened, synchronize, reopened, closed]
 
 jobs:
   build:
@@ -17,6 +16,10 @@ jobs:
           java-version: 1.8
       - name: Set up Docker
         run: curl -sSL https://get.docker.com/ | sh
+      - name: Run tests
+        env:
+          TZ: Europe/Warsaw
+        run: sbt test
       - name: Login to DockerHub
         env:
           secret_password: ${{ secrets.SecretPassword }}
