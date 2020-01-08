@@ -241,27 +241,29 @@ addFooter =
 
 showForm : Model -> Html Msg
 showForm model =
-    Tab.config TabMsg
-        |> Tab.pills
-        |> Tab.items
-            [ Tab.item
-                { id = "tabItem1"
-                , link = Tab.link [] [ text "Add new Category" ]
-                , pane =
-                    Tab.pane [ Spacing.mt3 ]
-                        [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
-                        ]
-                }
-            , Tab.item
-                { id = "tabItem2"
-                , link = Tab.link [] [ text "Add new Clock" ]
-                , pane =
-                    Tab.pane [ Spacing.mt3 ]
-                        [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
-                        ]
-                }
-            ]
-        |> Tab.view model.tabState
+    Grid.container []
+        [ Tab.config TabMsg
+            |> Tab.pills
+            |> Tab.items
+                [ Tab.item
+                    { id = "tabItem1"
+                    , link = Tab.link [] [ text "Add new Category" ]
+                    , pane =
+                        Tab.pane [ Spacing.mt3 ]
+                            [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
+                            ]
+                    }
+                , Tab.item
+                    { id = "tabItem2"
+                    , link = Tab.link [] [ text "Add new Clock" ]
+                    , pane =
+                        Tab.pane [ Spacing.mt3 ]
+                            [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
+                            ]
+                    }
+                ]
+            |> Tab.view model.tabState
+        ]
 
 
 showSettings : Model -> Html Msg
@@ -309,14 +311,14 @@ showUrls model =
         maxvalidwebsite =
             10
     in
-    Html.div [ Attr.class "example emails" ]
+    Html.div []
         [ Html.h2 [] [ Html.text "Source Websites" ]
         , MultiInput.view
             { placeholder = "Format : www.example.com", toOuterMsg = MultiInputMsg, isValid = isValid }
             []
             model.urls
             model.state
-        , Html.p [ Attr.class "counter" ]
+        , Html.p []
             [ Html.text <|
                 "You've introduced ("
                     ++ String.fromInt nvalidwebsite

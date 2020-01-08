@@ -71,7 +71,8 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ displayClock model
+        [ text model.title
+        , displayClock model
         , Button.button [ Button.warning, Button.attrs [ onClick RemoveClock ] ] [ text "Delete" ]
         ]
 
@@ -89,8 +90,7 @@ displayClock clock =
             String.padLeft 2 '0' (String.fromInt (Time.toSecond clock.zone clock.time))
     in
     div []
-        [ text clock.title
-        , h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+        [ h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
         ]
 
 

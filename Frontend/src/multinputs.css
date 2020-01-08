@@ -5,17 +5,17 @@ div.multi-input-container {
 }
 
 ul.multi-input-list {
-    overflow: hidden;
+    overflow: auto;
     cursor: text;
     margin: 0;
     padding: 0;
     background: transparent;
-    width: 100%;
+    margin: auto;
+    max-width: 30%;
 }
 
 ul.multi-input-list li {
     list-style-type: none;
-    max-width: 100%;
 }
 
 li.multi-input-token p {
@@ -46,7 +46,7 @@ li.multi-input-token {
     overflow: hidden;
     margin: 0.2em 0.1em;
     padding: 0.1em 0.5em;
-    background-color: #dee7f8;
+    background-color: greenyellow;
     cursor: default;
     border-radius: 15px;
     float: left;

@@ -80,7 +80,7 @@ updateTags msg updateConf model toOuterMsg =
         ( nextState, nextItems, nextCmd ) =
             MultiInput.update updateConf msg model.state model.tags
     in
-    ( { model | tags = nextItems, state = nextState }, Cmd.map toOuterMsg nextCmd )
+    ( { model | tags = nextItems |> List.filter validateTag, state = nextState }, Cmd.map toOuterMsg nextCmd )
 
 
 view : Model -> Html Msg
@@ -102,17 +102,22 @@ displayForm model =
 
 viewTags : Model -> Html Msg
 viewTags model =
-    Html.div [ Attr.class "example tags" ]
-        [ Html.h2 [] [ Html.text "Tags" ]
+    div []
+        [ h2 [] [ Html.text "Tags" ]
         , MultiInput.view
             { placeholder = "Add tags"
             , toOuterMsg = MultiInputMsg
-            , isValid = matches "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            , isValid = validateTag
             }
             []
             model.tags
             model.state
         ]
+
+
+validateTag : String -> Bool
+validateTag value =
+    (value |> matches "^[a-z0-9]+(?:-[a-z0-9]+)*$") && ((value |> String.length) < 30)
 
 
 validateForm : Model -> Bool
