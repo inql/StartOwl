@@ -15,13 +15,10 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
+import Json.Encode as E
 import Task
 import Time
-
-
-sampleClock : Clock
-sampleClock =
-    Clock 2 "Polska" Time.utc (Time.millisToPosix 0)
+import TimeZone exposing (..)
 
 
 type alias Clock =
@@ -39,13 +36,13 @@ type alias Model =
 type Msg
     = Tick Time.Posix
     | AdjustTimeZone Time.Zone
-    | InitializeClock
+    | RemoveClock
 
 
-init : Int -> ( Model, Cmd Msg )
-init _ =
-    ( sampleClock
-    , Task.perform AdjustTimeZone Time.here
+init : Int -> String -> Time.Zone -> ( Model, Cmd Msg )
+init id name zone =
+    ( Clock id name zone (Time.millisToPosix 0)
+    , Task.perform AdjustTimeZone (Task.succeed zone)
     )
 
 
@@ -62,8 +59,8 @@ update msg model =
             , Cmd.none
             )
 
-        InitializeClock ->
-            init 1
+        RemoveClock ->
+            ( { model | id = -1 }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -73,22 +70,31 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    displayClock model
+    div []
+        [ displayClock model
+        , Button.button [ Button.warning, Button.attrs [ onClick RemoveClock ] ] [ text "Delete" ]
+        ]
 
 
 displayClock : Clock -> Html Msg
 displayClock clock =
     let
         hour =
-            String.fromInt (Time.toHour clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toHour clock.zone clock.time))
 
         minute =
-            String.fromInt (Time.toMinute clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toMinute clock.zone clock.time))
 
         second =
-            String.fromInt (Time.toSecond clock.zone clock.time)
+            String.padLeft 2 '0' (String.fromInt (Time.toSecond clock.zone clock.time))
     in
     div []
         [ text clock.title
         , h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
         ]
+
+
+encodeClock : Clock -> E.Value
+encodeClock clock =
+    E.object
+        [ ( "id", E.int clock.id ), ( "title", E.string clock.title ) ]

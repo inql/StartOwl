@@ -1,9 +1,13 @@
 module SiteItems.Items exposing (..)
 
 import Bootstrap.Grid as Grid
+import Helpers exposing (getTimeZoneForName)
 import Html exposing (..)
+import Json.Decode as D
+import Json.Encode as E
 import SiteItems.Categories exposing (..)
 import SiteItems.Clocks exposing (..)
+import Time exposing (..)
 
 
 type Item
@@ -11,19 +15,17 @@ type Item
     | CustomClock Clock
 
 
-sampleItemClock : Item
-sampleItemClock =
-    CustomClock (Tuple.first (SiteItems.Clocks.init 0))
-
-
 type Msg
     = CategoryMsg Int SiteItems.Categories.Msg
     | ClockMsg Int SiteItems.Clocks.Msg
     | ClockSubsMsg SiteItems.Clocks.Msg
+    | UpdateAllUrls (List String)
 
 
 type alias Model =
-    List Item
+    { categories : List Category
+    , clocks : List Clock
+    }
 
 
 init : ( Model, Cmd Msg )
@@ -32,23 +34,15 @@ init =
         ( sampleItemCategory, catCmd ) =
             SiteItems.Categories.init 1
     in
-    ( [ sampleItemClock ]
+    ( Model [] []
     , Cmd.batch [ Cmd.map (CategoryMsg 1) catCmd ]
     )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    model
-        |> List.map
-            (\x ->
-                case x of
-                    CustomClock c ->
-                        Sub.map ClockSubsMsg (SiteItems.Clocks.subscriptions c)
-
-                    Section s ->
-                        Sub.none
-            )
+    model.clocks
+        |> List.map (\x -> Sub.map ClockSubsMsg (SiteItems.Clocks.subscriptions x))
         |> Sub.batch
 
 
@@ -58,8 +52,7 @@ update msg model =
         CategoryMsg id message ->
             let
                 searchedMaybeItem =
-                    model
-                        |> filterCategories
+                    model.categories
                         |> List.filter
                             (\x ->
                                 if x.id == id then
@@ -81,50 +74,78 @@ update msg model =
                 ( updatedItem, cmdMsg ) =
                     SiteItems.Categories.update message searchedItem
             in
-            ( model
-                |> List.map
-                    (\x ->
-                        case x of
-                            CustomClock c ->
-                                CustomClock c
-
-                            Section cat ->
+            ( { model
+                | categories =
+                    model.categories
+                        |> List.map
+                            (\cat ->
                                 if cat.id == id then
-                                    Section updatedItem
+                                    updatedItem
 
                                 else
-                                    Section cat
-                    )
+                                    cat
+                            )
+                        |> List.filter (\x -> x.status /= SiteItems.Categories.Delete)
+              }
             , Cmd.map (CategoryMsg id) cmdMsg
             )
 
         ClockMsg id message ->
-            ( model
-                |> List.map
-                    (\x ->
-                        case x of
-                            CustomClock c ->
-                                CustomClock (Tuple.first (SiteItems.Clocks.update message c))
+            ( { model
+                | clocks =
+                    model.clocks
+                        |> List.map
+                            (\x ->
+                                if x.id == id then
+                                    Tuple.first (SiteItems.Clocks.update message x)
 
-                            Section cat ->
-                                Section cat
-                    )
+                                else
+                                    x
+                            )
+                        |> List.filter (\x -> x.id >= 0)
+              }
             , Cmd.none
             )
 
         ClockSubsMsg message ->
-            ( model
-                |> List.map
-                    (\x ->
-                        case x of
-                            CustomClock c ->
-                                CustomClock (Tuple.first (SiteItems.Clocks.update message c))
-
-                            Section cat ->
-                                Section cat
-                    )
+            ( { model
+                | clocks =
+                    model.clocks
+                        |> List.map (\x -> Tuple.first (SiteItems.Clocks.update message x))
+              }
             , Cmd.none
             )
+
+        UpdateAllUrls urls ->
+            ( { model
+                | categories = model.categories |> List.map (\x -> Tuple.first (SiteItems.Categories.update (UpdateUrls urls) x))
+              }
+            , Cmd.none
+            )
+
+
+getNextId : Model -> Int
+getNextId model =
+    case getItemListWithId model |> List.reverse |> List.head of
+        Just x ->
+            Tuple.first x + 1
+
+        Nothing ->
+            1
+
+
+addNewCategory : String -> List String -> List String -> Model -> Model
+addNewCategory name tags urls model =
+    { model | categories = model.categories ++ [ Category (getNextId model) name tags [] Loading urls ] }
+
+
+addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
+addNewClock name timezone model =
+    let
+        ( newClock, cmd ) =
+            SiteItems.Clocks.init (getNextId model) name timezone
+    in
+    ( { model | clocks = model.clocks ++ [ newClock ] }, Cmd.map (ClockMsg newClock.id) cmd )
 
 
 filterCategories : List Item -> List Category
@@ -141,9 +162,26 @@ filterCategories items =
             )
 
 
+getItemListWithId : Model -> List ( Int, Item )
+getItemListWithId model =
+    let
+        categoriesWithId =
+            model.categories |> List.map (\x -> ( x.id, Section x ))
+
+        clocksWithId =
+            model.clocks |> List.map (\x -> ( x.id, CustomClock x ))
+    in
+    categoriesWithId ++ clocksWithId |> List.sortBy Tuple.first
+
+
+getItemList : Model -> List Item
+getItemList model =
+    getItemListWithId model |> List.map (\x -> Tuple.second x)
+
+
 view : Model -> Html Msg
 view model =
-    displayItems model
+    displayItems (getItemList model)
 
 
 displayItems : List Item -> Html Msg
@@ -159,3 +197,73 @@ displayItem item =
 
         CustomClock clock ->
             Html.map (ClockMsg clock.id) (SiteItems.Clocks.view clock)
+
+
+encodeCategories : Model -> List E.Value
+encodeCategories model =
+    model.categories |> List.map (\x -> encodeCategory x)
+
+
+encodeClocks : Model -> List E.Value
+encodeClocks model =
+    model.clocks |> List.map (\x -> encodeClock x)
+
+
+type alias SimplifiedCategory =
+    { id : Int
+    , name : String
+    , tags : List String
+    }
+
+
+type alias SimplifiedClock =
+    { id : Int
+    , title : String
+    }
+
+
+decodeCategories : String -> ( Model, Cmd Msg )
+decodeCategories jsonString =
+    case D.decodeString (D.list decodeCat) jsonString of
+        Ok val ->
+            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [])) [], Cmd.none )
+
+        Err _ ->
+            ( Model [] [], Cmd.none )
+
+
+decodeClocks : String -> ( Model, Cmd Msg )
+decodeClocks jsonString =
+    case D.decodeString (D.list decodeClock) jsonString of
+        Ok val ->
+            let
+                clocksWithCmds =
+                    val
+                        |> List.map (\x -> SiteItems.Clocks.init x.id x.title (getTimeZoneForName x.title))
+                        |> List.map (\( x, y ) -> ( x, Cmd.map (ClockMsg x.id) y ))
+
+                clocks =
+                    clocksWithCmds |> List.map (\x -> Tuple.first x)
+
+                cmds =
+                    clocksWithCmds |> List.map (\x -> Tuple.second x)
+            in
+            ( Model [] clocks, Cmd.batch cmds )
+
+        Err _ ->
+            ( Model [] [], Cmd.none )
+
+
+decodeClock : D.Decoder SimplifiedClock
+decodeClock =
+    D.map2 SimplifiedClock
+        (D.field "id" D.int)
+        (D.field "title" D.string)
+
+
+decodeCat : D.Decoder SimplifiedCategory
+decodeCat =
+    D.map3 SimplifiedCategory
+        (D.field "id" D.int)
+        (D.field "title" D.string)
+        (D.field "tags" (D.list D.string))

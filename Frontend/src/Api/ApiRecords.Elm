@@ -8,14 +8,15 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8001/searchrequest/"
+    "http://ec2-18-220-25-17.us-east-2.compute.amazonaws.com:8001/searchrequest/"
 
 
-encodeCategory : List String -> Encode.Value
-encodeCategory tags =
+preparePostJsonForCategory : List String -> List String -> Encode.Value
+preparePostJsonForCategory tags urls =
     Encode.object
         [ ( "keyword", Encode.list Encode.string tags )
-        , ( "domain", Encode.string "https://www.polsatnews.pl/rss/wszystkie.xml" )
+        , ( "domains", Encode.list Encode.string [ "https://www.tvn24.pl", "https://www.polsatnews.pl" ] )
+        , ( "searchModeInput", Encode.string "contains" )
         ]
 
 
@@ -27,12 +28,7 @@ recordsDecoder =
 decodeRecord : Decoder Record
 decodeRecord =
     map4 Record
-        (field "uri"
-            string
-        )
-        (field
-            "title"
-            string
-        )
+        (field "uri" string)
+        (field "title" string)
         (field "description" string)
         (field "imageUrl" (list string))

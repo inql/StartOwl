@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
 import Http
+import Json.Encode as E
 import SiteItems.Record exposing (..)
 
 
@@ -24,6 +25,7 @@ type Status
     | Error Http.Error
     | Good
     | NoMoreResults
+    | Delete
 
 
 type alias Category =
@@ -32,6 +34,7 @@ type alias Category =
     , tags : List String
     , records : List Record
     , status : Status
+    , urls : List String
     }
 
 
@@ -41,7 +44,7 @@ recordsInRow =
 
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good
+    Category id "Sample name" [] [] Good []
 
 
 type alias Model =
@@ -51,6 +54,8 @@ type alias Model =
 type Msg
     = LoadMoreRecords
     | GotResult (Result Http.Error (List Record))
+    | RemoveCategory
+    | UpdateUrls (List String)
 
 
 init : Int -> ( Category, Cmd Msg )
@@ -62,7 +67,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadMoreRecords ->
-            ( { model | status = Loading }, loadResults model )
+            ( { model | status = Loading }, loadResults model.urls model )
 
         GotResult result ->
             case result of
@@ -77,12 +82,18 @@ update msg model =
                 Err err ->
                     ( { model | status = Error err }, Cmd.none )
 
+        RemoveCategory ->
+            ( { model | status = Delete }, Cmd.none )
 
-loadResults : Model -> Cmd Msg
-loadResults model =
+        UpdateUrls newUrls ->
+            ( { model | urls = newUrls }, Cmd.none )
+
+
+loadResults : List String -> Model -> Cmd Msg
+loadResults urls model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (encodeCategory model.tags)
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags urls)
         , expect = Http.expectJson GotResult recordsDecoder
         }
 
@@ -108,6 +119,7 @@ displayCategory category =
             , Button.button
                 [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
                 [ text "Load more" ]
+            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
             ]
         |> Card.view
 
@@ -164,3 +176,15 @@ statusToString status =
 
         NoMoreResults ->
             "No new results"
+
+        Delete ->
+            "Removing ..."
+
+
+encodeCategory : Category -> E.Value
+encodeCategory category =
+    E.object
+        [ ( "id", E.int category.id )
+        , ( "title", E.string category.name )
+        , ( "tags", E.list E.string category.tags )
+        ]

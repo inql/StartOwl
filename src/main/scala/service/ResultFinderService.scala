@@ -1,14 +1,15 @@
 package service
 
-import java.io.FileNotFoundException
+import java.io.{BufferedReader, FileNotFoundException, InputStreamReader}
 import java.net.{MalformedURLException, URL}
+import java.util.stream.Collectors
 
-import akka.http.javadsl.Http
+import akka.http.scaladsl.model.HttpRequest
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
 import com.rometools.rome.io.{ParsingFeedException, SyndFeedInput, XmlReader}
 import model.{ApiSearchResult, SearchMode}
-import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import org.xml.sax.InputSource
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClients
 import util.AkkaSystemUtils
 
 import scala.annotation.tailrec
@@ -22,21 +23,23 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
   val imgSrcPattern: Regex = "https?://([^\"]+)".r
   val domainPattern: Regex = "^(?://|[^/]+)*".r
   val htmlTagPattern: Regex = "<[^>]*>".r
+  val filePattern: Regex = "file:\\/\\/\\/.*".r
 
   var optionalImgUrl: String = _
 
   def findAllResultsForDomain(): Seq[ApiSearchResult] = {
     system.log.info(s"Received request to get data from: ${domain} that matches ${keywords}")
     try{
-      val feedUrl = new URL(
-        domain.getOrElse(
-          throw new IllegalArgumentException
-        ))
+      val httpClient = HttpClients.createDefault()
+      val httpGet = new HttpGet(domain.get)
+      httpGet.addHeader("User-Agent", "Mozilla/5.0")
+      val httpResponse = httpClient.execute(httpGet)
+      val reader: BufferedReader = new BufferedReader(new InputStreamReader(httpResponse.getEntity.getContent))
 
       val urlConnection = feedUrl.openConnection()
 
       val input = new SyndFeedInput
-      val feed: SyndFeed = input.build(new XmlReader(urlConnection))
+      val feed: SyndFeed = input.build(reader)
       val entries = asScalaBuffer(feed.getEntries).toVector
 
       getAllResults(keywords,entries, searchMode)
