@@ -12,4 +12,4 @@ port storeCategories : List E.Value -> Cmd msg
 port storeClocks : List E.Value -> Cmd msg
 
 
-port storeUrls : List E.Value -> Cmd msg
+port storeUrls : List String -> Cmd msg

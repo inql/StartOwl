@@ -2,18 +2,24 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
-var catKey = "saved-categories";
-var clocksKey = "saved-clocks";
-
+const catKey = "saved-categories";
+const clocksKey = "saved-clocks";
+const urlKey = "saved-urls";
 var storedName = localStorage.getItem('user-name');
 var startName = "User";
 if (storedName != null){
     startName = storedName;
 }
 
+var storedUrls = localStorage.getItem(urlKey).split(",");
+if (storedUrls == null)
+{
+    storedUrls = ["www.polsatnews.pl", "www.tvn24.pl"]
+}
+
 var storedCats = localStorage.getItem(catKey);
 var storedClocks = localStorage.getItem(clocksKey);
-var flags = [startName, storedCats, storedClocks];
+var flags = [[startName, storedUrls], storedCats, storedClocks];
 
 const app = Elm.Main.init({
   node: document.getElementById('root'),
@@ -39,6 +45,11 @@ app.ports.storeClocks.subscribe(function(data)
 {
     localStorage.setItem(clocksKey, JSON.stringify(data));
     console.log(localStorage.getItem(clocksKey));  
+});
+
+app.ports.storeUrls.subscribe(function(data)
+{
+    localStorage.setItem(urlKey, data);
 });
 
 // If you want your app to work offline and load faster, you can change

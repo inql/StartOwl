@@ -47,8 +47,8 @@ main =
         }
 
 
-init : ( String, Maybe String, Maybe String ) -> ( Model, Cmd Msg )
-init ( name, loadedItems, loadedClocks ) =
+init : ( ( String, List String ), Maybe String, Maybe String ) -> ( Model, Cmd Msg )
+init ( ( name, urls ), loadedItems, loadedClocks ) =
     let
         ( categories, categoriesCmd ) =
             case loadedItems of
@@ -73,9 +73,13 @@ init ( name, loadedItems, loadedClocks ) =
             Forms.ClockForm.init
 
         items =
-            SiteItems.Items.Model categories.categories clocks.clocks
+            SiteItems.Items.Model
+                (categories.categories
+                    |> List.map (\category -> { category | urls = urls })
+                )
+                clocks.clocks
     in
-    ( Model name items form clockForm [] Modal.hidden Tab.initialState [] (MultiInput.init "urls-input")
+    ( Model name items form clockForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input")
     , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
     )
 
@@ -133,7 +137,7 @@ update msg model =
                         Just cat ->
                             let
                                 newItems =
-                                    addNewCategory cat.title cat.tags model.items
+                                    addNewCategory cat.title cat.tags model.urls model.items
                             in
                             ( newItems, storeCategories (encodeCategories newItems) )
 
@@ -184,8 +188,11 @@ update msg model =
             let
                 ( newModel, newCmd ) =
                     updateUrls m { separators = defaultSeparators } model MultiInputMsg
+
+                newUrls =
+                    newModel.urls |> List.filter (\x -> matches urlsRegex x)
             in
-            ( { newModel | urls = newModel.urls |> List.filter (\x -> matches urlsRegex x) }, Cmd.none )
+            ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
 
 updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )

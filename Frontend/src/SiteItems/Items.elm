@@ -19,6 +19,7 @@ type Msg
     = CategoryMsg Int SiteItems.Categories.Msg
     | ClockMsg Int SiteItems.Clocks.Msg
     | ClockSubsMsg SiteItems.Clocks.Msg
+    | UpdateAllUrls (List String)
 
 
 type alias Model =
@@ -115,6 +116,13 @@ update msg model =
             , Cmd.none
             )
 
+        UpdateAllUrls urls ->
+            ( { model
+                | categories = model.categories |> List.map (\x -> Tuple.first (SiteItems.Categories.update (UpdateUrls urls) x))
+              }
+            , Cmd.none
+            )
+
 
 getNextId : Model -> Int
 getNextId model =
@@ -126,9 +134,9 @@ getNextId model =
             1
 
 
-addNewCategory : String -> List String -> Model -> Model
-addNewCategory name tags model =
-    { model | categories = model.categories ++ [ Category (getNextId model) name tags [] Loading ] }
+addNewCategory : String -> List String -> List String -> Model -> Model
+addNewCategory name tags urls model =
+    { model | categories = model.categories ++ [ Category (getNextId model) name tags [] Loading urls ] }
 
 
 addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
@@ -218,7 +226,7 @@ decodeCategories : String -> ( Model, Cmd Msg )
 decodeCategories jsonString =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
-            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading)) [], Cmd.none )
+            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [])) [], Cmd.none )
 
         Err _ ->
             ( Model [] [], Cmd.none )

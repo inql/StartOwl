@@ -11,8 +11,8 @@ api_url =
     "http://ec2-18-220-25-17.us-east-2.compute.amazonaws.com:8001/searchrequest/"
 
 
-preparePostJsonForCategory : List String -> Encode.Value
-preparePostJsonForCategory tags =
+preparePostJsonForCategory : List String -> List String -> Encode.Value
+preparePostJsonForCategory tags urls =
     Encode.object
         [ ( "keyword", Encode.list Encode.string tags )
         , ( "domains", Encode.list Encode.string [ "https://www.tvn24.pl", "https://www.polsatnews.pl" ] )

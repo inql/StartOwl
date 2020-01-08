@@ -34,6 +34,7 @@ type alias Category =
     , tags : List String
     , records : List Record
     , status : Status
+    , urls : List String
     }
 
 
@@ -43,7 +44,7 @@ recordsInRow =
 
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good
+    Category id "Sample name" [] [] Good []
 
 
 type alias Model =
@@ -54,6 +55,7 @@ type Msg
     = LoadMoreRecords
     | GotResult (Result Http.Error (List Record))
     | RemoveCategory
+    | UpdateUrls (List String)
 
 
 init : Int -> ( Category, Cmd Msg )
@@ -65,7 +67,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadMoreRecords ->
-            ( { model | status = Loading }, loadResults model )
+            ( { model | status = Loading }, loadResults model.urls model )
 
         GotResult result ->
             case result of
@@ -83,12 +85,15 @@ update msg model =
         RemoveCategory ->
             ( { model | status = Delete }, Cmd.none )
 
+        UpdateUrls newUrls ->
+            ( { model | urls = newUrls }, Cmd.none )
 
-loadResults : Model -> Cmd Msg
-loadResults model =
+
+loadResults : List String -> Model -> Cmd Msg
+loadResults urls model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (preparePostJsonForCategory model.tags)
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags urls)
         , expect = Http.expectJson GotResult recordsDecoder
         }
 
