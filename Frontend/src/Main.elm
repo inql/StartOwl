@@ -7,7 +7,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
-import Bootstrap.Popover as Popover
+import Bootstrap.Modal as Modal
 import Bootstrap.Tab as Tab
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
@@ -31,7 +31,7 @@ type alias Model =
     , categoryForm : Forms.CategoryForm.Model
     , clockForm : Forms.ClockForm.Model
     , sourceWebsites : List String
-    , popoverState : Popover.State
+    , settingsVisibility : Modal.Visibility
     , tabState : Tab.State
     , urls : List String
     , state : MultiInput.State
@@ -75,9 +75,14 @@ init ( name, loadedItems, loadedClocks ) =
         items =
             SiteItems.Items.Model categories.categories clocks.clocks
     in
-    ( Model name items form clockForm [] Popover.initialState Tab.initialState [] (MultiInput.init "urls-input")
+    ( Model name items form clockForm [] Modal.hidden Tab.initialState [] (MultiInput.init "urls-input")
     , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
     )
+
+
+type ModalMsg
+    = CloseModal
+    | ShowModal
 
 
 type Msg
@@ -85,9 +90,10 @@ type Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
     | ClockFormMsg Forms.ClockForm.Msg
     | UpdateName String
-    | PopoverMsg Popover.State
     | TabMsg Tab.State
     | MultiInputMsg MultiInput.Msg
+    | SettingsMsg ModalMsg
+    | AnimateModal Modal.Visibility
 
 
 subscriptions : Model -> Sub Msg
@@ -97,6 +103,7 @@ subscriptions model =
         , Sub.map ClockFormMsg (Forms.ClockForm.subscriptions model.clockForm)
         , MultiInput.subscriptions model.state
             |> Sub.map MultiInputMsg
+        , Modal.subscriptions model.settingsVisibility AnimateModal
         ]
 
 
@@ -157,8 +164,16 @@ update msg model =
         UpdateName newName ->
             ( { model | name = newName }, storeName newName )
 
-        PopoverMsg state ->
-            ( { model | popoverState = state }, Cmd.none )
+        SettingsMsg modalMsg ->
+            case modalMsg of
+                ShowModal ->
+                    ( { model | settingsVisibility = Modal.shown }, Cmd.none )
+
+                CloseModal ->
+                    ( { model | settingsVisibility = Modal.hidden }, Cmd.none )
+
+        AnimateModal visibility ->
+            ( { model | settingsVisibility = visibility }, Cmd.none )
 
         TabMsg state ->
             ( { model | tabState = state }
@@ -197,7 +212,7 @@ view model =
                 , style "right" "0"
                 , style "top" "0"
                 ]
-                [ addPopover model ]
+                [ showSettings model ]
             , h1 []
                 [ text "Hello"
                 , Badge.badgeSuccess [ Spacing.ml1 ] [ text model.name ]
@@ -215,24 +230,6 @@ addFooter =
         [ br [] []
         , br [] []
         ]
-
-
-addPopover : Model -> Html Msg
-addPopover model =
-    Popover.config
-        (Button.button
-            [ Button.primary
-            , Button.large
-            , Button.attrs <|
-                Popover.onClick model.popoverState PopoverMsg
-            ]
-            [ text "Settings"
-            ]
-        )
-        |> Popover.left
-        |> Popover.content []
-            [ showSettings model ]
-        |> Popover.view model.popoverState
 
 
 showForm : Model -> Html Msg
@@ -263,8 +260,26 @@ showForm model =
 showSettings : Model -> Html Msg
 showSettings model =
     div []
-        [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
-        , Badge.badgeDark [] [ showUrls model ]
+        [ Button.button
+            [ Button.outlineSuccess, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
+            [ text "Settings" ]
+        , Modal.config (SettingsMsg CloseModal)
+            -- Configure the modal to use animations providing the new AnimateModal msg
+            |> Modal.withAnimation AnimateModal
+            |> Modal.small
+            |> Modal.h3 [] [ text "Settings" ]
+            |> Modal.body []
+                [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
+                , Badge.badgeDark [] [ showUrls model ]
+                ]
+            |> Modal.footer []
+                [ Button.button
+                    [ Button.outlinePrimary
+                    , Button.attrs [ onClick <| AnimateModal Modal.hiddenAnimated ]
+                    ]
+                    [ text "Close" ]
+                ]
+            |> Modal.view model.settingsVisibility
         ]
 
 
