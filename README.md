@@ -37,7 +37,7 @@ Available addresses:
 
 Link to docker:
 
-!()[https://dockeri.co/image/inql/start-owl-api]
+[![dockeri.co](https://dockeri.co/image/inql/start-owl-api)](https://hub.docker.com/r/inql/start-owl-api)
 - [inql/start-owl-api](https://hub.docker.com/r/inql/start-owl-api)
 
 ## Project Structure
