@@ -1,6 +1,6 @@
 module SiteItems.Categories exposing (..)
 
-import Api.ApiRecords exposing (..)
+import Api.ApiConnection exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button

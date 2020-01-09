@@ -11,10 +11,12 @@ if (storedName != null){
     startName = storedName;
 }
 
-var storedUrls = localStorage.getItem(urlKey).split(",");
+var storedUrls = localStorage.getItem(urlKey)
 if (storedUrls == null)
 {
     storedUrls = ["www.polsatnews.pl", "www.tvn24.pl"]
+} else {
+    storedUrls = storedUrls.split(",");
 }
 
 var storedCats = localStorage.getItem(catKey);

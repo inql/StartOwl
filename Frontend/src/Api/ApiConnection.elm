@@ -1,4 +1,4 @@
-module Api.ApiRecords exposing (..)
+module Api.ApiConnection exposing (..)
 
 import Http
 import Json.Decode exposing (Decoder, Error(..), decodeString, field, list, map4, string)
