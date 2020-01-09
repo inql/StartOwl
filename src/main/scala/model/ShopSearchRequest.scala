@@ -1,3 +1,3 @@
 package model
 
-case class ShopSearchRequest()
+case class ShopSearchRequest(priceFrom: Double, priceTo: Double, phrases: List[String], categories: List[String])
