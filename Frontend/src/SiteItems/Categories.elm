@@ -14,7 +14,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, src)
+import Html.Attributes exposing (class, href, src, style)
 import Html.Events exposing (onClick)
 import Http
 import IconManager as Icons
@@ -52,7 +52,12 @@ idToStr id =
 
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good [] (Accordion.initialStateCardOpen (idToStr id))
+    Category id "Sample name" [] [] Good [] (getOpenAccordion id)
+
+
+getOpenAccordion : Int -> Accordion.State
+getOpenAccordion id =
+    Accordion.initialStateCardOpen (idToStr id)
 
 
 type alias Model =
@@ -110,9 +115,14 @@ loadResults : List String -> Model -> Cmd Msg
 loadResults urls model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (preparePostJsonForCategory model.tags urls)
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags (addPrefixToUrl urls))
         , expect = Http.expectJson GotResult recordsDecoder
         }
+
+
+addPrefixToUrl : List String -> List String
+addPrefixToUrl urls =
+    urls |> List.map (\x -> "http://" ++ x)
 
 
 view : Model -> Html Msg
@@ -172,6 +182,7 @@ displayRecord record =
     Card.config [ Card.outlineSecondary, Card.align Text.alignXsCenter ]
         |> Card.header [ class "text-align" ]
             [ text record.title
+            , setCardClickable record.url
             ]
         |> Card.imgTop
             [ src
@@ -186,8 +197,22 @@ displayRecord record =
             []
         |> Card.block []
             [ Block.text [] [ text record.description ]
-            , Block.link [ href record.url ] [ text record.url ]
             ]
+
+
+setCardClickable : String -> Html Msg
+setCardClickable url =
+    a
+        [ style "position" "absolute"
+        , style "top" "0"
+        , style "left" "0"
+        , style "height" "100%"
+        , style "width" "100%"
+        , href url
+        , Html.Attributes.target "_blank"
+        , Html.Attributes.rel "noopener noreferrer"
+        ]
+        []
 
 
 statusToString : Status -> String

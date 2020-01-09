@@ -236,7 +236,7 @@ decodeCategories : String -> ( Model, Cmd Msg )
 decodeCategories jsonString =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
-            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] Accordion.initialState)) [], Cmd.none )
+            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] (getOpenAccordion x.id))) [], Cmd.none )
 
         Err _ ->
             ( Model [] [], Cmd.none )

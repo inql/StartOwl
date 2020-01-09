@@ -94,6 +94,7 @@ displayForm model =
         [ input [ placeholder "title", value model.title, onInput UpdateTitle ] []
         , br [] []
         , viewTags model
+        , br [] []
         , Button.button
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
@@ -112,12 +113,14 @@ viewTags model =
             []
             model.tags
             model.state
+        , br [] []
         ]
 
 
 validateTag : String -> Bool
 validateTag value =
-    (value |> matches "^[a-z0-9]+(?:-[a-z0-9]+)*$") && ((value |> String.length) < 30)
+    --(value |> matches "^[a-z0-9]+(?:-[a-z0-9]+)*$") && ((value |> String.length) < 30)
+    True
 
 
 validateForm : Model -> Bool

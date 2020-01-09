@@ -191,7 +191,7 @@ update msg model =
                     updateUrls m { separators = defaultSeparators } model MultiInputMsg
 
                 newUrls =
-                    newModel.urls |> List.filter (\x -> matches urlsRegex x)
+                    newModel.urls |> List.filter (\x -> matches urlsRegex x) |> List.take 10
             in
             ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
