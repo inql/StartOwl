@@ -37,8 +37,10 @@ class AllegroResultFinderService@Inject extends AkkaSystemUtils{
       
       sendRequest("https://allegro.pl/auth/oauth/token?grant_type=client_credentials",POST,List(authorization))
         .onComplete {
-          case Success(res: HttpResponse) =>
+          case Success(res: HttpResponse) =>{
+            system.log.info(""+res.toString())
             Unmarshal[HttpEntity](res.entity.withContentType(ContentTypes.`application/json`)).to[AuthorizationResponse]
+          }
           case Failure(_)   => {
             sys.error("Authorization with Allegro API failed. Exiting...")
             Future.failed(new AuthorizationException)
@@ -47,23 +49,29 @@ class AllegroResultFinderService@Inject extends AkkaSystemUtils{
       Future.failed(new AuthorizationException)
     }
 
-  def init(shopSearchRequest: ShopSearchRequest): Unit = {
+  def init(shopSearchRequest: ShopSearchRequest): Future[MappedAllegroSearchResult] = {
     authorize()
       .onComplete {
-        case Success(authorizationResponse: AuthorizationResponse) =>
-          val authToken = authorizationResponse.access_token
+        case Success(authorizationResponse: AuthorizationResponse) =>{
+          performSearch(authorizationResponse, shopSearchRequest)
+          system.log.info("Test1")
+        }
         case Failure(_) =>
-          foo
+          Map()
       }
+    system.log.info("Test22")
+
+    Future(Map("result" -> Seq()))
   }
 
   def foo = ???
 
 
 
-  def performSearch(authorizationResponse: AuthorizationResponse, shopSearchRequest: ShopSearchRequest): MappedAllegroSearchResult = {
-     val apiUrlPath: String = s"https://api.allegro.pl/offers/listing?price.from=${shopSearchRequest.priceFrom}&price.to=${shopSearchRequest.priceTo}&${shopSearchRequest.phrases.mkString("&phrase=")}&sort=-relevance"
-
+  def performSearch(authorizationResponse: AuthorizationResponse, shopSearchRequest: ShopSearchRequest): Future[MappedAllegroSearchResult] = {
+    val apiUrlPath: String = s"https://api.allegro.pl/offers/listing?price.from=${shopSearchRequest.priceFrom}&price.to=${shopSearchRequest.priceTo}&${shopSearchRequest.phrases.mkString("&phrase=")}&sort=-relevance"
+    system.log.info("Api url path = " + apiUrlPath)
+    Future(Map("result" -> Seq()))
   }
 
 

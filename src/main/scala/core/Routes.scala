@@ -12,7 +12,7 @@ import akka.routing.Router
 import akka.util.Timeout
 import com.google.inject.{Inject, Singleton}
 import directive.TestApiDirectives
-import model.{ApiSearchResult, DownstreamError, SearchRequest}
+import model.{ApiSearchResult, DownstreamError, SearchRequest, ShopSearchRequest}
 import repository.{InMemoryTestApiRepository, TestApiRepository}
 import service.{AllegroResultFinderService, AtomAndRssService}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
@@ -54,10 +54,12 @@ class Routes @Inject()(atomAndRssService: AtomAndRssService, allegroResultFinder
             complete(OK)
           }
         } ~
-          path("allegrosearch"){
-            get {
-              handleWithGeneric(allegroResultFinderService.authorize()) {
-                record => complete(record)
+          pathPrefix("allegrosearch"){
+            post {
+              entity(as[ShopSearchRequest]) { shopSearchRequest =>
+                handleWithGeneric(allegroResultFinderService.init(shopSearchRequest)) {record =>
+                  complete(record)
+                }
               }
             }
           } ~
