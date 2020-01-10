@@ -35,8 +35,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
 
 
-  object IncorrectMockRoutes extends Routes(MockHelper.incorrectMockAtomAndRssService)
-  object CorrectMockRoutes extends Routes(MockHelper.correctMockAtomAndRssService)
+  object IncorrectMockRoutes extends Routes(MockHelper.incorrectMockAtomAndRssService, null)
+  object CorrectMockRoutes extends Routes(MockHelper.correctMockAtomAndRssService, null)
 
   "The Routes Service" should {
 
