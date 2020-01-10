@@ -6,16 +6,18 @@ import akka.http.scaladsl.model.{HttpEntity, HttpMethods, HttpRequest, MediaType
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
-import model.{ApiSearchResult, SearchRequest}
+import model.{ApiSearchResult, SearchRequest, ShopSearchRequest, ShopSearchResult}
 import org.scalamock.scalatest.{AsyncMockFactory, MockFactory}
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
-import service.AtomAndRssService
+import service.{AllegroResultFinderService, AtomAndRssService}
 
 import scala.concurrent.Future
 
 object TestVariables {
   val incorrectSearchRequest: SearchRequest = SearchRequest(List(Option("wrong.url")), "contains")
   val correctSearchRequest: SearchRequest = SearchRequest(List(Option("https://correct.url.com")), "contains", List("Test1","Test2"))
+  val emptyShopSearchRequest: ShopSearchRequest = ShopSearchRequest(0,0,List(),"",0)
+  val correctShopSearchRequest: ShopSearchRequest = ShopSearchRequest(10,1000,List("Szafa"),"DESCRIPTIONS",1)
 }
 
 object MockHelper extends AsyncMockFactory {
@@ -29,6 +31,19 @@ object MockHelper extends AsyncMockFactory {
     (fm.findAllResults _).expects(TestVariables.correctSearchRequest).returning(Future.successful(Map("results" -> List()))).noMoreThanOnce()
     fm
   }
+
+  val emptyMockAllegroResultFinderService = {
+    val fm = mock[AllegroResultFinderService]
+    (fm.init _).expects(TestVariables.emptyShopSearchRequest).returning(Future.successful(Map("results" -> List()))).noMoreThanOnce()
+    fm
+  }
+
+  val correctMockAllegroResultFinderService = {
+    val fm = mock[AllegroResultFinderService]
+    (fm.init _).expects(TestVariables.correctShopSearchRequest).returning(Future.successful(Map("results" -> List(ShopSearchResult("Szafa",10.0,"PLN","https://image.com/url",100.00,"https://result.com/url"))))).noMoreThanOnce()
+    fm
+  }
+
 }
 
 class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with BeforeAndAfterEach {
@@ -37,7 +52,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
   object IncorrectMockRoutes extends Routes(MockHelper.incorrectMockAtomAndRssService, null)
   object CorrectMockRoutes extends Routes(MockHelper.correctMockAtomAndRssService, null)
-
+  object EmptyMockRoutes extends Routes(null, MockHelper.emptyMockAllegroResultFinderService)
+  object CorrectAllegroRoutes extends Routes(null, MockHelper.correctMockAllegroResultFinderService)
   "The Routes Service" should {
 
     "return \"OK\" value as a response for a GET request to /healthcheck" in {
@@ -123,6 +139,61 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
       }
     }
 
+  }
+
+  "return empty result as a response for a empty POST request to /allegrosearch " in {
+    val jsonRequest = ByteString(
+      s"""
+
+         |{
+
+         |    "priceFrom":0,
+         |    "priceTo":0,
+         |    "phrases":[],
+         |    "searchMode":"",
+         |    "limit":0
+
+         |}
+
+        """.stripMargin)
+
+    val postRequest = HttpRequest(
+      HttpMethods.POST,
+      uri = "/allegrosearch",
+      entity = HttpEntity(MediaTypes.`application/json`, jsonRequest)
+    )
+
+    postRequest ~> Route.seal(EmptyMockRoutes.routes) ~> check {
+      status.isSuccess() shouldEqual true
+    }
+  }
+
+  "return non-empty result as a response for a correct POST request to /allegrosearch " in {
+    val jsonRequest = ByteString(
+      s"""
+
+         |{
+
+         |    "priceFrom":10,
+         |    "priceTo":1000,
+         |    "searchModeInput":"contains",
+         |    "phrases":["Szafa"],
+         |    "searchMode":"DESCRIPTIONS",
+         |    "limit":1
+
+         |}
+
+        """.stripMargin)
+
+    val postRequest = HttpRequest(
+      HttpMethods.POST,
+      uri = "/allegrosearch",
+      entity = HttpEntity(MediaTypes.`application/json`, jsonRequest)
+    )
+
+    postRequest ~> Route.seal(CorrectAllegroRoutes.routes) ~> check {
+      status.isSuccess() shouldEqual true
+    }
   }
 
 

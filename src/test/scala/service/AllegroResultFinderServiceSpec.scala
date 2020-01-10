@@ -1,6 +1,7 @@
 package service
 
 import model.ShopSearchRequest
+import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
 import util.TypesDef.MappedAllegroSearchResult
