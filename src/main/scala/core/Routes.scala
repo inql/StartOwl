@@ -12,9 +12,9 @@ import akka.routing.Router
 import akka.util.Timeout
 import com.google.inject.{Inject, Singleton}
 import directive.TestApiDirectives
-import model.{ApiSearchResult, DownstreamError, SearchRequest}
+import model.{ApiSearchResult, DownstreamError, SearchRequest, ShopSearchRequest}
 import repository.{InMemoryTestApiRepository, TestApiRepository}
-import service.AtomAndRssService
+import service.{AllegroResultFinderService, AtomAndRssService}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import util.AkkaSystemUtils
 import java.util.concurrent.TimeUnit
@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success}
 import util.ImplicitJsonConversions._
 import akka.actor._
+import akka.http.scaladsl.model.Uri.Path.~
 import akka.pattern.ask
 import akka.util.Timeout
 import org.joda.time.Seconds
@@ -30,7 +31,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
 @Singleton
-class Routes @Inject()(atomAndRssService: AtomAndRssService) extends AkkaSystemUtils with TestApiDirectives{
+class Routes @Inject()(atomAndRssService: AtomAndRssService, allegroResultFinderService: AllegroResultFinderService) extends AkkaSystemUtils with TestApiDirectives{
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
   import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
@@ -53,6 +54,15 @@ class Routes @Inject()(atomAndRssService: AtomAndRssService) extends AkkaSystemU
             complete(OK)
           }
         } ~
+          pathPrefix("allegrosearch"){
+            post {
+              entity(as[ShopSearchRequest]) { shopSearchRequest =>
+                handleWithGeneric(allegroResultFinderService.init(shopSearchRequest)) {record =>
+                  complete(record)
+                }
+              }
+            }
+          } ~
           pathPrefix("searchrequest"){
             post {
               entity(as[SearchRequest]) { searchRequest =>
