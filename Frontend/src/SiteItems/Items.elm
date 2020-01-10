@@ -1,5 +1,6 @@
 module SiteItems.Items exposing (..)
 
+import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Helpers exposing (getTimeZoneForName)
 import Html exposing (..)
@@ -41,9 +42,14 @@ init =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    model.clocks
-        |> List.map (\x -> Sub.map ClockSubsMsg (SiteItems.Clocks.subscriptions x))
-        |> Sub.batch
+    Sub.batch
+        [ model.clocks
+            |> List.map (\x -> Sub.map ClockSubsMsg (SiteItems.Clocks.subscriptions x))
+            |> Sub.batch
+        , model.categories
+            |> List.map (\x -> Sub.map (CategoryMsg x.id) (SiteItems.Categories.subscriptions x))
+            |> Sub.batch
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -136,7 +142,11 @@ getNextId model =
 
 addNewCategory : String -> List String -> List String -> Model -> Model
 addNewCategory name tags urls model =
-    { model | categories = model.categories ++ [ Category (getNextId model) name tags [] Loading urls ] }
+    let
+        id =
+            getNextId model
+    in
+    { model | categories = model.categories ++ [ Category id name tags [] Loading urls (Accordion.initialStateCardOpen (idToStr id)) ] }
 
 
 addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
@@ -226,7 +236,7 @@ decodeCategories : String -> ( Model, Cmd Msg )
 decodeCategories jsonString =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
-            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [])) [], Cmd.none )
+            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] (getOpenAccordion x.id))) [], Cmd.none )
 
         Err _ ->
             ( Model [] [], Cmd.none )

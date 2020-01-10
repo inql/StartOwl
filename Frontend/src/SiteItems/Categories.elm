@@ -1,6 +1,7 @@
 module SiteItems.Categories exposing (..)
 
-import Api.ApiRecords exposing (..)
+import Api.ApiConnection exposing (..)
+import Bootstrap.Accordion as Accordion
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
@@ -13,9 +14,10 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, src)
+import Html.Attributes exposing (class, href, src, style)
 import Html.Events exposing (onClick)
 import Http
+import IconManager as Icons
 import Json.Encode as E
 import SiteItems.Record exposing (..)
 
@@ -35,6 +37,7 @@ type alias Category =
     , records : List Record
     , status : Status
     , urls : List String
+    , accordionState : Accordion.State
     }
 
 
@@ -42,9 +45,19 @@ recordsInRow =
     2
 
 
+idToStr : Int -> String
+idToStr id =
+    id |> String.fromInt
+
+
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good []
+    Category id "Sample name" [] [] Good [] (getOpenAccordion id)
+
+
+getOpenAccordion : Int -> Accordion.State
+getOpenAccordion id =
+    Accordion.initialStateCardOpen (idToStr id)
 
 
 type alias Model =
@@ -56,11 +69,17 @@ type Msg
     | GotResult (Result Http.Error (List Record))
     | RemoveCategory
     | UpdateUrls (List String)
+    | AccordionMsg Accordion.State
 
 
 init : Int -> ( Category, Cmd Msg )
 init i =
     ( sampleCategory i, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Accordion.subscriptions model.accordionState AccordionMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -88,14 +107,22 @@ update msg model =
         UpdateUrls newUrls ->
             ( { model | urls = newUrls }, Cmd.none )
 
+        AccordionMsg state ->
+            ( { model | accordionState = state }, Cmd.none )
+
 
 loadResults : List String -> Model -> Cmd Msg
 loadResults urls model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (preparePostJsonForCategory model.tags urls)
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags (addPrefixToUrl urls))
         , expect = Http.expectJson GotResult recordsDecoder
         }
+
+
+addPrefixToUrl : List String -> List String
+addPrefixToUrl urls =
+    urls |> List.map (\x -> "http://" ++ x)
 
 
 view : Model -> Html Msg
@@ -105,23 +132,34 @@ view model =
 
 displayCategory : Category -> Html Msg
 displayCategory category =
-    Card.config [ Card.outlinePrimary, Card.align Text.alignXsCenter, Card.attrs [ Spacing.mb3 ] ]
-        |> Card.headerH2 [ class "text-center" ]
-            [ text category.name
+    Accordion.config AccordionMsg
+        |> Accordion.withAnimation
+        |> Accordion.cards
+            [ Accordion.card
+                { id = category.id |> idToStr
+                , options = []
+                , header =
+                    Accordion.header [] <|
+                        Accordion.toggle []
+                            [ text category.name
+                            , Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveCategory, class "delete_button" ] ] [ Icons.deleteIcon ]
+                            ]
+                , blocks =
+                    [ Accordion.block []
+                        [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
+                        , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
+                        , Block.link []
+                            [ text (statusToString category.status)
+                            , br [] []
+                            , Button.button
+                                [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
+                                [ text "Load more" ]
+                            ]
+                        ]
+                    ]
+                }
             ]
-        |> Card.block []
-            [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
-            , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
-            ]
-        |> Card.footer []
-            [ text (statusToString category.status)
-            , br [] []
-            , Button.button
-                [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
-                [ text "Load more" ]
-            , Button.button [ Button.warning, Button.attrs [ onClick RemoveCategory ] ] [ text "Delete" ]
-            ]
-        |> Card.view
+        |> Accordion.view category.accordionState
 
 
 split : Int -> List Record -> List (List Record)
@@ -144,6 +182,7 @@ displayRecord record =
     Card.config [ Card.outlineSecondary, Card.align Text.alignXsCenter ]
         |> Card.header [ class "text-align" ]
             [ text record.title
+            , setCardClickable record.url
             ]
         |> Card.imgTop
             [ src
@@ -158,8 +197,22 @@ displayRecord record =
             []
         |> Card.block []
             [ Block.text [] [ text record.description ]
-            , Block.link [ href record.url ] [ text record.url ]
             ]
+
+
+setCardClickable : String -> Html Msg
+setCardClickable url =
+    a
+        [ style "position" "absolute"
+        , style "top" "0"
+        , style "left" "0"
+        , style "height" "100%"
+        , style "width" "100%"
+        , href url
+        , Html.Attributes.target "_blank"
+        , Html.Attributes.rel "noopener noreferrer"
+        ]
+        []
 
 
 statusToString : Status -> String

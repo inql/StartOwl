@@ -6,7 +6,7 @@ import java.util.stream.Collectors
 
 import akka.http.scaladsl.model.HttpRequest
 import com.rometools.rome.feed.synd.{SyndEnclosure, SyndEntry, SyndFeed}
-import com.rometools.rome.io.{SyndFeedInput, XmlReader}
+import com.rometools.rome.io.{ParsingFeedException, SyndFeedInput, XmlReader}
 import model.{ApiSearchResult, SearchMode}
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
@@ -14,7 +14,7 @@ import util.AkkaSystemUtils
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters.asScalaBuffer
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 import scala.util.matching.Regex
 
 class ResultFinderService(val domain: Option[String],val keywords: List[String],val searchMode: SearchMode) extends AkkaSystemUtils {
@@ -35,7 +35,7 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
       httpGet.addHeader("User-Agent", "Mozilla/5.0")
       val httpResponse = httpClient.execute(httpGet)
       val reader: BufferedReader = new BufferedReader(new InputStreamReader(httpResponse.getEntity.getContent))
-
+      
       val input = new SyndFeedInput
       val feed: SyndFeed = input.build(reader)
       val entries = asScalaBuffer(feed.getEntries).toVector

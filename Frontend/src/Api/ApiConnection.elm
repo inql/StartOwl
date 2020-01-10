@@ -1,4 +1,4 @@
-module Api.ApiRecords exposing (..)
+module Api.ApiConnection exposing (..)
 
 import Http
 import Json.Decode exposing (Decoder, Error(..), decodeString, field, list, map4, string)
@@ -8,14 +8,14 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://ec2-18-220-25-17.us-east-2.compute.amazonaws.com:8001/searchrequest/"
+    "http://localhost:8002/searchrequest/"
 
 
 preparePostJsonForCategory : List String -> List String -> Encode.Value
 preparePostJsonForCategory tags urls =
     Encode.object
         [ ( "keyword", Encode.list Encode.string tags )
-        , ( "domains", Encode.list Encode.string [ "https://www.tvn24.pl", "https://www.polsatnews.pl" ] )
+        , ( "domains", Encode.list Encode.string urls )
         , ( "searchModeInput", Encode.string "contains" )
         ]
 

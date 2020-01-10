@@ -17,6 +17,7 @@ import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (class, href, style, value)
 import Html.Events as Ev exposing (onClick, onInput)
+import IconManager as Icons
 import Json.Decode exposing (Decoder, field, map2, map3, string)
 import MultiInput
 import Ports exposing (..)
@@ -190,7 +191,7 @@ update msg model =
                     updateUrls m { separators = defaultSeparators } model MultiInputMsg
 
                 newUrls =
-                    newModel.urls |> List.filter (\x -> matches urlsRegex x)
+                    newModel.urls |> List.filter (\x -> matches urlsRegex x) |> List.take 10
             in
             ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
@@ -212,7 +213,9 @@ defaultSeparators =
 view : Model -> Html Msg
 view model =
     div [ class "text-center" ]
-        [ CDN.stylesheet
+        [ List.range 1 4
+            |> List.map (\_ -> br [] [])
+            |> div []
         , div []
             [ div
                 [ style "position" "absolute"
@@ -222,9 +225,10 @@ view model =
                 [ showSettings model ]
             , h1 []
                 [ text "Hello"
-                , Badge.badgeSuccess [ Spacing.ml1 ] [ text model.name ]
+                , Badge.badgeDark [ Spacing.ml1 ] [ text model.name ]
                 ]
             ]
+        , br [] []
         , Html.map UpdateItems (SiteItems.Items.view model.items)
         , showForm model
         , addFooter
@@ -241,27 +245,29 @@ addFooter =
 
 showForm : Model -> Html Msg
 showForm model =
-    Tab.config TabMsg
-        |> Tab.pills
-        |> Tab.items
-            [ Tab.item
-                { id = "tabItem1"
-                , link = Tab.link [] [ text "Add new Category" ]
-                , pane =
-                    Tab.pane [ Spacing.mt3 ]
-                        [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
-                        ]
-                }
-            , Tab.item
-                { id = "tabItem2"
-                , link = Tab.link [] [ text "Add new Clock" ]
-                , pane =
-                    Tab.pane [ Spacing.mt3 ]
-                        [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
-                        ]
-                }
-            ]
-        |> Tab.view model.tabState
+    Grid.container []
+        [ Tab.config TabMsg
+            |> Tab.pills
+            |> Tab.items
+                [ Tab.item
+                    { id = "tabItem1"
+                    , link = Tab.link [] [ text "Add new Category" ]
+                    , pane =
+                        Tab.pane [ Spacing.mt3 ]
+                            [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
+                            ]
+                    }
+                , Tab.item
+                    { id = "tabItem2"
+                    , link = Tab.link [] [ text "Add new Clock" ]
+                    , pane =
+                        Tab.pane [ Spacing.mt3 ]
+                            [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
+                            ]
+                    }
+                ]
+            |> Tab.view model.tabState
+        ]
 
 
 showSettings : Model -> Html Msg
@@ -269,15 +275,17 @@ showSettings model =
     div []
         [ Button.button
             [ Button.outlineSuccess, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
-            [ text "Settings" ]
+            [ Icons.settingsIcon ]
         , Modal.config (SettingsMsg CloseModal)
             -- Configure the modal to use animations providing the new AnimateModal msg
             |> Modal.withAnimation AnimateModal
-            |> Modal.small
-            |> Modal.h3 [] [ text "Settings" ]
+            |> Modal.large
+            |> Modal.h1 [] [ text "Settings" ]
             |> Modal.body []
-                [ Badge.badgeWarning [] [ input [ value model.name, onInput UpdateName ] [] ]
-                , Badge.badgeDark [] [ showUrls model ]
+                [ text "Your name "
+                , input [ value model.name, onInput UpdateName ] []
+                , br [] []
+                , showUrls model
                 ]
             |> Modal.footer []
                 [ Button.button
@@ -309,14 +317,14 @@ showUrls model =
         maxvalidwebsite =
             10
     in
-    Html.div [ Attr.class "example emails" ]
+    Html.div []
         [ Html.h2 [] [ Html.text "Source Websites" ]
         , MultiInput.view
             { placeholder = "Format : www.example.com", toOuterMsg = MultiInputMsg, isValid = isValid }
             []
             model.urls
             model.state
-        , Html.p [ Attr.class "counter" ]
+        , Html.p []
             [ Html.text <|
                 "You've introduced ("
                     ++ String.fromInt nvalidwebsite

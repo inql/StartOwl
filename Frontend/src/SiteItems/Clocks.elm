@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Http
+import IconManager as Icons
 import Json.Encode as E
 import Task
 import Time
@@ -71,8 +72,9 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ displayClock model
-        , Button.button [ Button.warning, Button.attrs [ onClick RemoveClock ] ] [ text "Delete" ]
+        [ text model.title
+        , displayClock model
+        , Button.button [ Button.small, Button.danger, Button.attrs [ onClick RemoveClock ] ] [ Icons.deleteIcon ]
         ]
 
 
@@ -89,8 +91,7 @@ displayClock clock =
             String.padLeft 2 '0' (String.fromInt (Time.toSecond clock.zone clock.time))
     in
     div []
-        [ text clock.title
-        , h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+        [ h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
         ]
 
 

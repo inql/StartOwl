@@ -96,6 +96,8 @@ displayForm model =
         , displayClock model.clock
         , select [ onInput UpdateTimeZone ]
             (possibleTimeZones |> Dict.toList |> List.map (\x -> Tuple.first x) |> List.map (\x -> option [ value x ] [ text x ]))
+        , br [] []
+        , br [] []
         , Button.button
             [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
@@ -114,4 +116,4 @@ displayClock mclock =
 
 validateNewClock : Model -> Bool
 validateNewClock model =
-    model.name |> String.startsWith "New clock" |> not
+    (model.name |> String.startsWith "New clock" |> not) && (model.name |> String.isEmpty |> not)
