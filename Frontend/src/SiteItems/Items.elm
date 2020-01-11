@@ -178,6 +178,15 @@ update msg model =
             )
 
 
+toggleEditMode : Model -> Model
+toggleEditMode model =
+    { model
+        | categories = model.categories |> List.map updateEditModeCat
+        , clocks = model.clocks |> List.map updateEditModeClock
+        , shoppingQueries = model.shoppingQueries |> List.map updateEditModeSq
+    }
+
+
 getNextId : Model -> Int
 getNextId model =
     case getItemListWithId model |> List.reverse |> List.head of
@@ -194,7 +203,7 @@ addNewCategory name tags urls model =
         id =
             getNextId model
     in
-    { model | categories = model.categories ++ [ Category id name tags [] Loading urls (Accordion.initialStateCardOpen (idToStr id)) ] }
+    { model | categories = model.categories ++ [ Category id name tags [] Loading urls (Accordion.initialStateCardOpen (idToStr id)) False ] }
 
 
 addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
@@ -318,7 +327,7 @@ decodeCategories : String -> ( Model, Cmd Msg )
 decodeCategories jsonString =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
-            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] (getOpenAccordion x.id))) [] [], Cmd.none )
+            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] (getOpenAccordion x.id) False)) [] [], Cmd.none )
 
         Err _ ->
             ( Model [] [] [], Cmd.none )

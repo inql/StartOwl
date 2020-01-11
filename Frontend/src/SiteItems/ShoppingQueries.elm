@@ -35,6 +35,7 @@ type alias ShoppingQuery =
     , results : List QueryResult
     , carouselState : Carousel.State
     , accordionState : Accordion.State
+    , editMode : Bool
     }
 
 
@@ -59,6 +60,7 @@ init id pMin pMax tags =
                 [ noResultsQuery ]
                 Carousel.initialState
                 (Accordion.initialStateCardOpen "card1")
+                False
     in
     ( myModel
     , Cmd.none
@@ -102,6 +104,11 @@ update msg model =
             ( { model | id = -1 }, Cmd.none )
 
 
+updateEditModeSq : ShoppingQuery -> ShoppingQuery
+updateEditModeSq model =
+    { model | editMode = model.editMode |> not }
+
+
 loadResults : ShoppingQuery -> Cmd Msg
 loadResults model =
     Http.post
@@ -137,7 +144,12 @@ view model =
                     Accordion.header [] <|
                         Accordion.toggle []
                             [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax)
-                            , Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveItem, class "delete_button" ] ] [ Icons.deleteIcon ]
+                            , case model.editMode of
+                                True ->
+                                    Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveItem, class "delete_button" ] ] [ Icons.deleteIcon ]
+
+                                False ->
+                                    div [] []
                             ]
                 , blocks =
                     [ Accordion.block []

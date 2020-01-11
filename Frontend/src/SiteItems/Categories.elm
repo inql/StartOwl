@@ -38,6 +38,7 @@ type alias Category =
     , status : Status
     , urls : List String
     , accordionState : Accordion.State
+    , editMode : Bool
     }
 
 
@@ -52,7 +53,7 @@ idToStr id =
 
 sampleCategory : Int -> Category
 sampleCategory id =
-    Category id "Sample name" [] [] Good [] (getOpenAccordion id)
+    Category id "Sample name" [] [] Good [] (getOpenAccordion id) False
 
 
 getOpenAccordion : Int -> Accordion.State
@@ -111,6 +112,13 @@ update msg model =
             ( { model | accordionState = state }, Cmd.none )
 
 
+updateEditModeCat : Category -> Category
+
+
+updateEditModeCat cat =
+    { cat | editMode = cat.editMode |> not }
+
+
 loadResults : List String -> Model -> Cmd Msg
 loadResults urls model =
     Http.post
@@ -142,7 +150,12 @@ displayCategory category =
                     Accordion.header [] <|
                         Accordion.toggle []
                             [ text category.name
-                            , Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveCategory, class "delete_button" ] ] [ Icons.deleteIcon ]
+                            , case category.editMode of
+                                True ->
+                                    Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveCategory, class "delete_button" ] ] [ Icons.deleteIcon ]
+
+                                False ->
+                                    div [] []
                             ]
                 , blocks =
                     [ Accordion.block []

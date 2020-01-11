@@ -38,6 +38,7 @@ type alias Model =
     , tabState : Tab.State
     , urls : List String
     , state : MultiInput.State
+    , editMode : Bool
     }
 
 
@@ -94,7 +95,7 @@ init ( ( name, urls ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
                 clocks.clocks
                 queries.shoppingQueries
     in
-    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input")
+    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") False
     , Cmd.batch
         [ Cmd.map UpdateItems categoriesCmd
         , Cmd.map CategoryFormMsg formCmd
@@ -120,6 +121,7 @@ type Msg
     | MultiInputMsg MultiInput.Msg
     | SettingsMsg ModalMsg
     | AnimateModal Modal.Visibility
+    | ToggleEditMode
 
 
 subscriptions : Model -> Sub Msg
@@ -236,6 +238,9 @@ update msg model =
             in
             ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
+        ToggleEditMode ->
+            ( { model | items = toggleEditMode model.items }, Cmd.none )
+
 
 updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
 updateUrls msg updateConf model toOuterMsg =
@@ -257,6 +262,11 @@ view model =
         [ List.range 1 4
             |> List.map (\_ -> br [] [])
             |> div []
+        , Button.button
+            [ Button.outlinePrimary
+            , Button.attrs [ onClick <| ToggleEditMode ]
+            ]
+            [ text "Edit mode" ]
         , div []
             [ div
                 [ style "position" "absolute"

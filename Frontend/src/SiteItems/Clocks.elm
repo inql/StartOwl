@@ -27,6 +27,7 @@ type alias Clock =
     , title : String
     , zone : Time.Zone
     , time : Time.Posix
+    , editMode : Bool
     }
 
 
@@ -42,7 +43,7 @@ type Msg
 
 init : Int -> String -> Time.Zone -> ( Model, Cmd Msg )
 init id name zone =
-    ( Clock id name zone (Time.millisToPosix 0)
+    ( Clock id name zone (Time.millisToPosix 0) False
     , Task.perform AdjustTimeZone (Task.succeed zone)
     )
 
@@ -64,6 +65,11 @@ update msg model =
             ( { model | id = -1 }, Cmd.none )
 
 
+updateEditModeClock : Clock -> Clock
+updateEditModeClock model =
+    { model | editMode = model.editMode |> not }
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Time.every 1000 Tick
@@ -74,7 +80,12 @@ view model =
     div []
         [ text model.title
         , displayClock model
-        , Button.button [ Button.small, Button.danger, Button.attrs [ onClick RemoveClock ] ] [ Icons.deleteIcon ]
+        , case model.editMode of
+            True ->
+                Button.button [ Button.small, Button.danger, Button.attrs [ onClick RemoveClock ] ] [ Icons.deleteIcon ]
+
+            False ->
+                div [] []
         ]
 
 

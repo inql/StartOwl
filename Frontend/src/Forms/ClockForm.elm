@@ -58,7 +58,7 @@ update msg model =
             ( { model
                 | zone = newZone
                 , name = keyNewZone
-                , clock = Just (Clock -1 keyNewZone newZone (Time.millisToPosix 0))
+                , clock = Just (Clock -1 keyNewZone newZone (Time.millisToPosix 0) False)
               }
             , Cmd.none
             , Nothing
