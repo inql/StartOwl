@@ -68,7 +68,10 @@ noResultsQuery =
 
 subscriptions : ShoppingQuery -> Sub Msg
 subscriptions model =
-    Carousel.subscriptions model.carouselState CarouselMsg
+    Sub.batch
+        [ Carousel.subscriptions model.carouselState CarouselMsg
+        , Accordion.subscriptions model.accordionState AccordionMsg
+        ]
 
 
 update : Msg -> ShoppingQuery -> ( ShoppingQuery, Cmd Msg )
