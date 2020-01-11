@@ -1,0 +1,32 @@
+name: Deploy Frontend on Github Pages
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Set up JDK 1.8
+        run: npm install create-elm-app -g
+      - name: Show content of Frontend directory
+        working-directory: ./Frontend
+        run: ls -al
+      - name: Build an app to build/ directory
+        working-directory: ./Frontend
+        run: elm-app build
+      - name: Deploy
+        working-directory: ./Frontend
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./Frontend/build
+          SCRIPT_MODE: true
+        run: |
+          wget https://raw.githubusercontent.com/peaceiris/actions-gh-pages/v2/entrypoint.sh
+          bash ./entrypoint.sh
+
