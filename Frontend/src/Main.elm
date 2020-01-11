@@ -146,6 +146,7 @@ update msg model =
                 [ Cmd.map UpdateItems givenCommand
                 , storeCategories (encodeCategories updatedItems)
                 , storeClocks (encodeClocks updatedItems)
+                , storeShoppingQueries (encodeShoppingQueries updatedItems)
                 ]
             )
 

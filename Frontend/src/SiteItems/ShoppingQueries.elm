@@ -159,20 +159,34 @@ view model =
 
 displayRecord : QueryResult -> Slide.Config msg
 displayRecord result =
-    Slide.config []
-        (Slide.customContent
-            (Card.config
-                [ Card.align Text.alignSmCenter
-                ]
-                |> Card.imgTop [ src result.img, class "center" ]
-                    []
-                |> Card.block [ Block.align Text.alignSmCenter ]
-                    [ Block.titleH5 [ style "color" "black" ] [ text result.name, setSlideClickable result.link ]
-                    , Block.text [ style "color" "gray" ] [ text (String.fromFloat result.price |> String.padRight 2 '0') ]
-                    ]
-                |> Card.view
-            )
-        )
+    case result.img of
+        "" ->
+            Slide.config []
+                (Slide.customContent
+                    (Card.config
+                        [ Card.align Text.alignSmCenter
+                        ]
+                        |> Card.block [ Block.align Text.alignSmCenter ]
+                            [ Block.titleH5 [ style "color" "black" ] [ text "No results :(" ] ]
+                        |> Card.view
+                    )
+                )
+
+        _ ->
+            Slide.config []
+                (Slide.customContent
+                    (Card.config
+                        [ Card.align Text.alignSmCenter
+                        ]
+                        |> Card.imgTop [ src result.img, class "center" ]
+                            []
+                        |> Card.block [ Block.align Text.alignSmCenter ]
+                            [ Block.titleH5 [ style "color" "black" ] [ text result.name, setSlideClickable result.link ]
+                            , Block.text [ style "color" "gray" ] [ text (String.fromFloat result.price |> String.padRight 2 '0') ]
+                            ]
+                        |> Card.view
+                    )
+                )
 
 
 
