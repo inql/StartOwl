@@ -1,10 +1,14 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "94449e89d37b7ea8a212037a963cb4eb",
+    "revision": "0eb26625695349b707906c00f0806ff8",
+    "url": "/StartOwl/assets/logo.png"
+  },
+  {
+    "revision": "fc2bf250fbc0cc312faed621b4897c92",
     "url": "/StartOwl/favicon.ico"
   },
   {
-    "revision": "c62a63de63a3b433af66f2b1514f03eb",
+    "revision": "7c1b2ad7191585267112cb72f760a3ba",
     "url": "/StartOwl/index.html"
   },
   {
@@ -12,12 +16,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/StartOwl/manifest.json"
   },
   {
-    "revision": "00a5cf9fdfa0e41fe0fe",
-    "url": "/StartOwl/static/css/main.448e9b73.chunk.css"
+    "revision": "30c22b0793a14624ec98",
+    "url": "/StartOwl/static/css/main.7ceb6b93.chunk.css"
   },
   {
-    "revision": "00a5cf9fdfa0e41fe0fe",
-    "url": "/StartOwl/static/js/main.00a5cf9f.chunk.js"
+    "revision": "30c22b0793a14624ec98",
+    "url": "/StartOwl/static/js/main.30c22b07.chunk.js"
   },
   {
     "revision": "6b267279f787e4b88186",
