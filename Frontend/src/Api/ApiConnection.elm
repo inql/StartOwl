@@ -8,7 +8,12 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8001/searchrequest/"
+    "http://localhost:8002/searchrequest/"
+
+
+query_url : String
+query_url =
+    "http://ec2-18-188-180-112.us-east-2.compute.amazonaws.com:8001/allegrosearch/"
 
 
 preparePostJsonForCategory : List String -> List String -> Encode.Value
@@ -17,6 +22,17 @@ preparePostJsonForCategory tags urls =
         [ ( "keyword", Encode.list Encode.string tags )
         , ( "domains", Encode.list Encode.string urls )
         , ( "searchModeInput", Encode.string "contains" )
+        ]
+
+
+preparePostJsonForShoppingQuery : Int -> Int -> List String -> Encode.Value
+preparePostJsonForShoppingQuery priceFrom priceTo phrases =
+    Encode.object
+        [ ( "priceFrom", Encode.int priceFrom )
+        , ( "priceTo", Encode.int priceTo )
+        , ( "phrases", Encode.list Encode.string phrases )
+        , ( "limit", Encode.int 10 )
+        , ( "searchMode", Encode.string "DESCRIPTIONS" )
         ]
 
 

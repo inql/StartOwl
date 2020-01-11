@@ -47,14 +47,14 @@ init =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ model.clocks
+        [ model.shoppingQueries
+            |> List.map (\x -> Sub.map (ShoppingQueryMsg x.id) (SiteItems.ShoppingQueries.subscriptions x))
+            |> Sub.batch
+        , model.clocks
             |> List.map (\x -> Sub.map ClockSubsMsg (SiteItems.Clocks.subscriptions x))
             |> Sub.batch
         , model.categories
             |> List.map (\x -> Sub.map (CategoryMsg x.id) (SiteItems.Categories.subscriptions x))
-            |> Sub.batch
-        , model.shoppingQueries
-            |> List.map (\x -> Sub.map (ShoppingQueryMsg x.id) (SiteItems.ShoppingQueries.subscriptions x))
             |> Sub.batch
         ]
 
@@ -121,20 +121,43 @@ update msg model =
             )
 
         ShoppingQueryMsg id message ->
+            let
+                searchedMaybeItem =
+                    model.shoppingQueries
+                        |> List.filter
+                            (\x ->
+                                if x.id == id then
+                                    True
+
+                                else
+                                    False
+                            )
+                        |> List.head
+
+                searchedItem =
+                    case searchedMaybeItem of
+                        Just sq ->
+                            sq
+
+                        Nothing ->
+                            Tuple.first (SiteItems.ShoppingQueries.init -1 -1 -1 [])
+
+                ( updatedItem, cmdMsg ) =
+                    SiteItems.ShoppingQueries.update message searchedItem
+            in
             ( { model
                 | shoppingQueries =
                     model.shoppingQueries
                         |> List.map
                             (\x ->
                                 if x.id == id then
-                                    Tuple.first (SiteItems.ShoppingQueries.update message x)
-                                    -- POSSIBLE PROBLEM HERE
+                                    updatedItem
 
                                 else
                                     x
                             )
               }
-            , Cmd.none
+            , Cmd.map (ShoppingQueryMsg updatedItem.id) cmdMsg
             )
 
         ClockSubsMsg message ->

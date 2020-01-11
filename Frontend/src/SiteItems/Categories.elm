@@ -179,16 +179,14 @@ listOfRecords records =
 
 displayRecord : Record -> Card.Config Msg
 displayRecord record =
-    Card.config [ Card.outlineSecondary, Card.align Text.alignXsCenter ]
+    Card.config [ Card.outlineSecondary ]
+        |> Card.imgTop
+            [ src record.img ]
+            []
         |> Card.header [ class "text-align" ]
             [ text record.title
             , setCardClickable record.url
             ]
-        |> Card.imgTop
-            [ src
-                record.img
-            ]
-            []
         |> Card.block []
             [ Block.text [] [ text record.description ]
             ]

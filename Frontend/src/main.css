@@ -32,3 +32,15 @@ img {
   top: 0;
   right: 0;
 }
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 300px;
+}
+
+.strokeme {
+  color: yellowgreen;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
