@@ -89,7 +89,7 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
         case enclosure :: rest => buildResultFromRssEntry(rest, checkImage(enclosure.getUrl) :: imgUrls)
       }
 
-      buildResultFromRssEntry(asScalaBuffer(entry.getEnclosures).toList)
+      buildResultFromRssEntry(asScalaBuffer(entry.getEnclosures).toList.sortBy(_.getLength))
     }
 
     @tailrec
