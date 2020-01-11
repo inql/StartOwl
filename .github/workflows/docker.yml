@@ -2,7 +2,7 @@ name: Perform tests on API and publish Docker image on AWS
 
 on:
   pull_request:
-    types: [assigned, opened, synchronize, reopened, closed]
+    types: [assigned, synchronize, reopened, closed]
 
 jobs:
   build:
