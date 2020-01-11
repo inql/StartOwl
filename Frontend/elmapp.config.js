@@ -1,3 +1,3 @@
 module.exports = {
-    homepage: "https://inql.github.io/StartOwl",
+    homepage: "https://inql.github.io",
 }
