@@ -2,15 +2,18 @@ module SiteItems.ShoppingQueries exposing (..)
 
 import Api.ApiConnection exposing (..)
 import Bootstrap.Accordion as Accordion
+import Bootstrap.Button as Button
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.Carousel as Carousel exposing (defaultStateOptions)
 import Bootstrap.Carousel.Slide as Slide
+import Bootstrap.Text as Text
 import Helpers exposing (errorToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
+import IconManager as Icons
 import Json.Decode as D
 import Json.Encode as E
 
@@ -40,6 +43,7 @@ type Msg
     | LoadItems
     | GotResult (Result Http.Error (List QueryResult))
     | AccordionMsg Accordion.State
+    | RemoveItem
 
 
 init : Int -> Int -> Int -> List String -> ( ShoppingQuery, Cmd Msg )
@@ -94,6 +98,9 @@ update msg model =
         AccordionMsg state ->
             ( { model | accordionState = state }, Cmd.none )
 
+        RemoveItem ->
+            ( { model | id = -1 }, Cmd.none )
+
 
 loadResults : ShoppingQuery -> Cmd Msg
 loadResults model =
@@ -126,7 +133,12 @@ view model =
             [ Accordion.card
                 { id = "card1"
                 , options = []
-                , header = Accordion.header [] <| Accordion.toggle [] [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax) ]
+                , header =
+                    Accordion.header [] <|
+                        Accordion.toggle []
+                            [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax)
+                            , Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveItem, class "delete_button" ] ] [ Icons.deleteIcon ]
+                            ]
                 , blocks =
                     [ Accordion.block []
                         [ Block.custom <|
@@ -148,12 +160,23 @@ view model =
 displayRecord : QueryResult -> Slide.Config msg
 displayRecord result =
     Slide.config []
-        (Slide.image [ class "center" ] result.img)
-        |> Slide.caption []
-            [ setSlideClickable result.link
-            , h1 [ class "strokeme" ] [ text result.name ]
-            , h4 [ class "strokeme", style "color" "gray" ] [ text (String.fromFloat result.price |> String.padRight 2 '0') ]
-            ]
+        (Slide.customContent
+            (Card.config
+                [ Card.align Text.alignSmCenter
+                ]
+                |> Card.imgTop [ src result.img, class "center" ]
+                    []
+                |> Card.block [ Block.align Text.alignSmCenter ]
+                    [ Block.titleH5 [ style "color" "black" ] [ text result.name, setSlideClickable result.link ]
+                    , Block.text [ style "color" "gray" ] [ text (String.fromFloat result.price |> String.padRight 2 '0') ]
+                    ]
+                |> Card.view
+            )
+        )
+
+
+
+--
 
 
 encodeShoppingQuery : ShoppingQuery -> E.Value

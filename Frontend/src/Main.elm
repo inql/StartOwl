@@ -199,7 +199,7 @@ update msg model =
                                 ( newItems, cmdAfterAdding ) =
                                     addNewShoppingQuery newQuery.priceMin newQuery.priceMax newQuery.tags model.items
                             in
-                            ( newItems, Cmd.batch [ Cmd.map UpdateItems cmdAfterAdding, storeShoppingQueries (encodeShoppingQueries newItems) ] )
+                            ( newItems, Cmd.batch [ storeShoppingQueries (encodeShoppingQueries newItems), Cmd.map UpdateItems cmdAfterAdding ] )
 
                         Nothing ->
                             ( model.items, Cmd.none )
