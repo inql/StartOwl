@@ -13,13 +13,14 @@ jobs:
           node-version: '10.x'
       - name: Set up JDK 1.8
         run: npm install create-elm-app -g
-      - name: Move to Frontend directory
-        run: cd Frontend
       - name: Show content of Frontend directory
+        working-directory: ./Frontend
         run: ls -al
       - name: Build an app to build/ directory
+        working-directory: ./Frontend
         run: elm-app build
       - name: Deploy
+        working-directory: ./Frontend
         env:
           ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           PUBLISH_BRANCH: gh-pages
