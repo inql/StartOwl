@@ -190,7 +190,7 @@ displayRecord result =
                     (Card.config
                         [ Card.align Text.alignSmCenter
                         ]
-                        |> Card.imgTop [ src result.img, class "center" ]
+                        |> Card.imgTop [ src result.img, class "center", style "max-height" "400px" ]
                             []
                         |> Card.block [ Block.align Text.alignSmCenter ]
                             [ Block.titleH5 [ style "color" "black" ] [ text result.name, setSlideClickable result.link ]

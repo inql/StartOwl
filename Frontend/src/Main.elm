@@ -277,19 +277,8 @@ view model =
                 [ List.range 1 4
                     |> List.map (\_ -> br [] [])
                     |> div []
-                , Button.button
-                    [ Button.outlinePrimary
-                    , Button.attrs [ onClick <| ToggleEditMode ]
-                    ]
-                    [ text "Edit mode" ]
                 , div []
-                    [ div
-                        [ style "position" "absolute"
-                        , style "right" "0"
-                        , style "top" "0"
-                        ]
-                        [ showSettings model ]
-                    , h1 []
+                    [ h1 []
                         [ text "Hello"
                         , Badge.badgeDark [ Spacing.ml1 ] [ text model.name ]
                         ]
@@ -308,29 +297,19 @@ addNavbar : Model -> Html Msg
 addNavbar model =
     Navbar.config NavbarMsg
         |> Navbar.withAnimation
-        |> Navbar.collapseMedium
+        |> Navbar.fixTop
         |> Navbar.primary
         |> Navbar.items
-            [ Navbar.itemLink
-                [ href "#" ]
-                [ text "Item 1" ]
-            , Navbar.dropdown
-                { id = "mydropdown"
-                , toggle = Navbar.dropdownToggle [] [ text "My dropdown" ]
-                , items =
-                    [ Navbar.dropdownHeader [ text "Heading" ]
-                    , Navbar.dropdownItem
-                        [ href "#" ]
-                        [ text "Drop item 1" ]
-                    , Navbar.dropdownItem
-                        [ href "#" ]
-                        [ text "Drop item 2" ]
-                    , Navbar.dropdownDivider
-                    , Navbar.dropdownItem
-                        [ href "#" ]
-                        [ text "Drop item 3" ]
+            []
+        |> Navbar.customItems
+            [ Navbar.formItem []
+                [ Button.button
+                    [ Button.dark
+                    , Button.attrs [ onClick <| ToggleEditMode ]
                     ]
-                }
+                    [ text "Edit mode" ]
+                ]
+            , Navbar.formItem [] [ showSettings model ]
             ]
         |> Navbar.view model.navbarState
 
@@ -382,7 +361,7 @@ showSettings : Model -> Html Msg
 showSettings model =
     div []
         [ Button.button
-            [ Button.outlineSuccess, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
+            [ Button.dark, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
             [ Icons.settingsIcon ]
         , Modal.config (SettingsMsg CloseModal)
             -- Configure the modal to use animations providing the new AnimateModal msg
