@@ -8,6 +8,7 @@ import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
 import Bootstrap.Modal as Modal
+import Bootstrap.Navbar as Navbar
 import Bootstrap.Tab as Tab
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
@@ -16,7 +17,7 @@ import Forms.ClockForm exposing (..)
 import Forms.ShoppingQueryForm exposing (..)
 import Helpers exposing (..)
 import Html exposing (..)
-import Html.Attributes as Attr exposing (class, href, style, value)
+import Html.Attributes as Attr exposing (class, href, src, style, value)
 import Html.Events as Ev exposing (onClick, onInput)
 import IconManager as Icons
 import Json.Decode exposing (Decoder, field, map2, map3, string)
@@ -38,12 +39,13 @@ type alias Model =
     , tabState : Tab.State
     , urls : List String
     , state : MultiInput.State
+    , navbarState : Navbar.State
     , editMode : Bool
     }
 
 
 main =
-    Browser.element
+    Browser.document
         { init = init
         , update = update
         , view = view
@@ -94,14 +96,18 @@ init ( ( name, urls ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
                 )
                 clocks.clocks
                 queries.shoppingQueries
+
+        ( navbarState, navbarCmd ) =
+            Navbar.initialState NavbarMsg
     in
-    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") False
+    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") navbarState False
     , Cmd.batch
         [ Cmd.map UpdateItems categoriesCmd
         , Cmd.map CategoryFormMsg formCmd
         , Cmd.map ClockFormMsg clockFormCmd
         , Cmd.map UpdateItems clockCmd
         , Cmd.map UpdateItems queriesCmd
+        , navbarCmd
         ]
     )
 
@@ -122,6 +128,7 @@ type Msg
     | SettingsMsg ModalMsg
     | AnimateModal Modal.Visibility
     | ToggleEditMode
+    | NavbarMsg Navbar.State
 
 
 subscriptions : Model -> Sub Msg
@@ -132,6 +139,7 @@ subscriptions model =
         , MultiInput.subscriptions model.state
             |> Sub.map MultiInputMsg
         , Modal.subscriptions model.settingsVisibility AnimateModal
+        , Navbar.subscriptions model.navbarState NavbarMsg
         ]
 
 
@@ -241,6 +249,9 @@ update msg model =
         ToggleEditMode ->
             ( { model | items = toggleEditMode model.items }, Cmd.none )
 
+        NavbarMsg state ->
+            ( { model | navbarState = state }, Cmd.none )
+
 
 updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
 updateUrls msg updateConf model toOuterMsg =
@@ -256,34 +267,72 @@ defaultSeparators =
     [ "\n", "\t", " ", "," ]
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ class "text-center" ]
-        [ List.range 1 4
-            |> List.map (\_ -> br [] [])
-            |> div []
-        , Button.button
-            [ Button.outlinePrimary
-            , Button.attrs [ onClick <| ToggleEditMode ]
-            ]
-            [ text "Edit mode" ]
-        , div []
-            [ div
-                [ style "position" "absolute"
-                , style "right" "0"
-                , style "top" "0"
+    { title = "Start Owl"
+    , body =
+        [ Grid.container []
+            [ addNavbar model
+            , div [ class "text-center" ]
+                [ List.range 1 4
+                    |> List.map (\_ -> br [] [])
+                    |> div []
+                , Button.button
+                    [ Button.outlinePrimary
+                    , Button.attrs [ onClick <| ToggleEditMode ]
+                    ]
+                    [ text "Edit mode" ]
+                , div []
+                    [ div
+                        [ style "position" "absolute"
+                        , style "right" "0"
+                        , style "top" "0"
+                        ]
+                        [ showSettings model ]
+                    , h1 []
+                        [ text "Hello"
+                        , Badge.badgeDark [ Spacing.ml1 ] [ text model.name ]
+                        ]
+                    ]
+                , br [] []
+                , Html.map UpdateItems (SiteItems.Items.view model.items)
+                , showForm model
+                , addFooter
                 ]
-                [ showSettings model ]
-            , h1 []
-                [ text "Hello"
-                , Badge.badgeDark [ Spacing.ml1 ] [ text model.name ]
-                ]
             ]
-        , br [] []
-        , Html.map UpdateItems (SiteItems.Items.view model.items)
-        , showForm model
-        , addFooter
         ]
+    }
+
+
+addNavbar : Model -> Html Msg
+addNavbar model =
+    Navbar.config NavbarMsg
+        |> Navbar.withAnimation
+        |> Navbar.collapseMedium
+        |> Navbar.primary
+        |> Navbar.items
+            [ Navbar.itemLink
+                [ href "#" ]
+                [ text "Item 1" ]
+            , Navbar.dropdown
+                { id = "mydropdown"
+                , toggle = Navbar.dropdownToggle [] [ text "My dropdown" ]
+                , items =
+                    [ Navbar.dropdownHeader [ text "Heading" ]
+                    , Navbar.dropdownItem
+                        [ href "#" ]
+                        [ text "Drop item 1" ]
+                    , Navbar.dropdownItem
+                        [ href "#" ]
+                        [ text "Drop item 2" ]
+                    , Navbar.dropdownDivider
+                    , Navbar.dropdownItem
+                        [ href "#" ]
+                        [ text "Drop item 3" ]
+                    ]
+                }
+            ]
+        |> Navbar.view model.navbarState
 
 
 addFooter : Html Msg

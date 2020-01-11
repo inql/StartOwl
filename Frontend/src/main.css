@@ -18,6 +18,11 @@ body {
   color: darkslategrey;
 }
 
+.navbar-option {
+  width: 100%;
+  white-space: nowrap;
+}
+
 h1 {
   font-size: 30px;
 }
