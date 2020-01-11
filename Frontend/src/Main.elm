@@ -13,6 +13,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Browser
 import Forms.CategoryForm
 import Forms.ClockForm exposing (..)
+import Forms.ShoppingQueryForm exposing (..)
 import Helpers exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (class, href, style, value)
@@ -31,6 +32,7 @@ type alias Model =
     , items : SiteItems.Items.Model
     , categoryForm : Forms.CategoryForm.Model
     , clockForm : Forms.ClockForm.Model
+    , shoppingQueryForm : Forms.ShoppingQueryForm.Model
     , sourceWebsites : List String
     , settingsVisibility : Modal.Visibility
     , tabState : Tab.State
@@ -48,16 +50,16 @@ main =
         }
 
 
-init : ( ( String, List String ), Maybe String, Maybe String ) -> ( Model, Cmd Msg )
-init ( ( name, urls ), loadedItems, loadedClocks ) =
+init : ( ( String, List String ), ( Maybe String, Maybe String, Maybe String ) ) -> ( Model, Cmd Msg )
+init ( ( name, urls ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
     let
         ( categories, categoriesCmd ) =
-            case loadedItems of
+            case loadedCategories of
                 Just i ->
                     SiteItems.Items.decodeCategories i
 
                 Nothing ->
-                    ( SiteItems.Items.Model [] [], Cmd.none )
+                    ( SiteItems.Items.Model [] [] [], Cmd.none )
 
         ( clocks, clockCmd ) =
             case loadedClocks of
@@ -65,7 +67,15 @@ init ( ( name, urls ), loadedItems, loadedClocks ) =
                     SiteItems.Items.decodeClocks i
 
                 Nothing ->
-                    ( SiteItems.Items.Model [] [], Cmd.none )
+                    ( SiteItems.Items.Model [] [] [], Cmd.none )
+
+        ( queries, queriesCmd ) =
+            case loadedQueries of
+                Just i ->
+                    SiteItems.Items.decodeShoppingQueries i
+
+                Nothing ->
+                    ( SiteItems.Items.Model [] [] [], Cmd.none )
 
         ( form, formCmd ) =
             Forms.CategoryForm.init
@@ -73,15 +83,25 @@ init ( ( name, urls ), loadedItems, loadedClocks ) =
         ( clockForm, clockFormCmd ) =
             Forms.ClockForm.init
 
+        shoppingQueryForm =
+            Forms.ShoppingQueryForm.init
+
         items =
             SiteItems.Items.Model
                 (categories.categories
                     |> List.map (\category -> { category | urls = urls })
                 )
                 clocks.clocks
+                queries.shoppingQueries
     in
-    ( Model name items form clockForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input")
-    , Cmd.batch [ Cmd.map UpdateItems categoriesCmd, Cmd.map CategoryFormMsg formCmd, Cmd.map ClockFormMsg clockFormCmd, Cmd.map UpdateItems clockCmd ]
+    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input")
+    , Cmd.batch
+        [ Cmd.map UpdateItems categoriesCmd
+        , Cmd.map CategoryFormMsg formCmd
+        , Cmd.map ClockFormMsg clockFormCmd
+        , Cmd.map UpdateItems clockCmd
+        , Cmd.map UpdateItems queriesCmd
+        ]
     )
 
 
@@ -94,6 +114,7 @@ type Msg
     = UpdateItems SiteItems.Items.Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
     | ClockFormMsg Forms.ClockForm.Msg
+    | ShoppingQueryFormMsg Forms.ShoppingQueryForm.Msg
     | UpdateName String
     | TabMsg Tab.State
     | MultiInputMsg MultiInput.Msg
@@ -166,6 +187,25 @@ update msg model =
             in
             ( { model | clockForm = updatedForm, items = itemsAfterAdding }, Cmd.batch [ Cmd.map ClockFormMsg givenCommand, commandAfterAdd ] )
 
+        ShoppingQueryFormMsg m ->
+            let
+                ( updatedForm, givenCommand, possibleNew ) =
+                    Forms.ShoppingQueryForm.update m model.shoppingQueryForm
+
+                ( itemsAfterAdding, commandsAfterAdd ) =
+                    case possibleNew of
+                        Just newQuery ->
+                            let
+                                ( newItems, cmdAfterAdding ) =
+                                    addNewShoppingQuery newQuery.priceMin newQuery.priceMax newQuery.tags model.items
+                            in
+                            ( newItems, Cmd.batch [ Cmd.map UpdateItems cmdAfterAdding, storeShoppingQueries (encodeShoppingQueries newItems) ] )
+
+                        Nothing ->
+                            ( model.items, Cmd.none )
+            in
+            ( { model | shoppingQueryForm = updatedForm, items = itemsAfterAdding }, Cmd.batch [ commandsAfterAdd ] )
+
         UpdateName newName ->
             ( { model | name = newName }, storeName newName )
 
@@ -191,7 +231,7 @@ update msg model =
                     updateUrls m { separators = defaultSeparators } model MultiInputMsg
 
                 newUrls =
-                    newModel.urls |> List.filter (\x -> matches urlsRegex x) |> List.take 10
+                    newModel.urls |> List.filter (\x -> matches urlsRegex x) |> List.take maxValidWebsites
             in
             ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
@@ -265,6 +305,14 @@ showForm model =
                             [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
                             ]
                     }
+                , Tab.item
+                    { id = "tabItem3"
+                    , link = Tab.link [] [ text "Add new shopping query" ]
+                    , pane =
+                        Tab.pane [ Spacing.mt3 ]
+                            [ Html.map ShoppingQueryFormMsg (Forms.ShoppingQueryForm.view model.shoppingQueryForm)
+                            ]
+                    }
                 ]
             |> Tab.view model.tabState
         ]
@@ -302,6 +350,10 @@ urlsRegex =
     ".+\\..+\\..+"
 
 
+maxValidWebsites =
+    10
+
+
 showUrls : Model -> Html Msg
 showUrls model =
     let
@@ -313,9 +365,6 @@ showUrls model =
 
         nvalidwebsite =
             List.length validwebsite
-
-        maxvalidwebsite =
-            10
     in
     Html.div []
         [ Html.h2 [] [ Html.text "Source Websites" ]
@@ -329,7 +378,7 @@ showUrls model =
                 "You've introduced ("
                     ++ String.fromInt nvalidwebsite
                     ++ "/"
-                    ++ String.fromInt maxvalidwebsite
+                    ++ String.fromInt maxValidWebsites
                     ++ ") valid websites"
             ]
         ]

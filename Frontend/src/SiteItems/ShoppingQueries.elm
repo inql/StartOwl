@@ -1,6 +1,6 @@
 module SiteItems.ShoppingQueries exposing (..)
 
-import Bootstrap.Carousel as Carousel
+import Bootstrap.Carousel as Carousel exposing (defaultStateOptions)
 import Bootstrap.Carousel.Slide as Slide
 import Html exposing (..)
 import Json.Encode as E
@@ -18,6 +18,7 @@ type alias ShoppingQuery =
     , priceMin : Int
     , priceMax : Int
     , tags : List String
+    , searchMode : String
     , results : List QueryResult
     , carouselState : Carousel.State
     }
@@ -29,7 +30,20 @@ type Msg
 
 init : Int -> Int -> Int -> List String -> ( ShoppingQuery, Cmd Msg )
 init id pMin pMax tags =
-    ( ShoppingQuery id pMin pMax tags [] Carousel.initialState, Cmd.none )
+    ( ShoppingQuery id
+        pMin
+        pMax
+        tags
+        "DESCRIPTION"
+        [ QueryResult "none" 3.14 "none", QueryResult "Exmaple" 3.14 "Example" ]
+        (Carousel.initialStateWithOptions
+            { defaultStateOptions
+                | interval = Just 2000
+                , pauseOnHover = False
+            }
+        )
+    , Cmd.none
+    )
 
 
 subscriptions : ShoppingQuery -> Sub Msg
@@ -46,12 +60,16 @@ update msg model =
 
 view : ShoppingQuery -> Html Msg
 view model =
-    Carousel.config CarouselMsg []
-        |> Carousel.withControls
-        |> (Carousel.slides <|
-                (model.results |> List.map (\x -> displayRecord x))
-           )
-        |> Carousel.view model.carouselState
+    div []
+        [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax)
+        , Carousel.config CarouselMsg []
+            |> Carousel.withControls
+            |> Carousel.withIndicators
+            |> (Carousel.slides <|
+                    (model.results |> List.map (\x -> displayRecord x))
+               )
+            |> Carousel.view model.carouselState
+        ]
 
 
 displayRecord : QueryResult -> Slide.Config msg

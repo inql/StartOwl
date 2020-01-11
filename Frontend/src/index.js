@@ -5,6 +5,7 @@ import * as serviceWorker from './serviceWorker';
 const catKey = "saved-categories";
 const clocksKey = "saved-clocks";
 const urlKey = "saved-urls";
+const queriesKey = "saved-queries";
 var storedName = localStorage.getItem('user-name');
 var startName = "User";
 if (storedName != null){
@@ -19,9 +20,12 @@ if (storedUrls == null)
     storedUrls = storedUrls.split(",");
 }
 
+
+
+var storedQueries = localStorage.getItem(queriesKey);
 var storedCats = localStorage.getItem(catKey);
 var storedClocks = localStorage.getItem(clocksKey);
-var flags = [[startName, storedUrls], storedCats, storedClocks];
+var flags = [[startName, storedUrls], [storedCats, storedClocks, storedQueries]];
 
 const app = Elm.Main.init({
   node: document.getElementById('root'),
@@ -49,10 +53,16 @@ app.ports.storeClocks.subscribe(function(data)
     console.log(localStorage.getItem(clocksKey));  
 });
 
+app.ports.storeShoppingQueries.subscribe(function(data){
+    localStorage.setItem(queriesKey, JSON.stringify(data));
+});
+
 app.ports.storeUrls.subscribe(function(data)
 {
     localStorage.setItem(urlKey, data);
 });
+
+
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
