@@ -302,14 +302,14 @@ addNavbar model =
         |> Navbar.items
             []
         |> Navbar.customItems
-            [ Navbar.formItem []
+            [ Navbar.textItem []
                 [ Button.button
                     [ Button.dark
                     , Button.attrs [ onClick <| ToggleEditMode ]
                     ]
                     [ text "Edit mode" ]
                 ]
-            , Navbar.formItem [] [ showSettings model ]
+            , Navbar.textItem [] [ showSettings model ]
             ]
         |> Navbar.view model.navbarState
 
@@ -361,7 +361,7 @@ showSettings : Model -> Html Msg
 showSettings model =
     div []
         [ Button.button
-            [ Button.dark, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
+            [ Button.small, Button.dark, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
             [ Icons.settingsIcon ]
         , Modal.config (SettingsMsg CloseModal)
             -- Configure the modal to use animations providing the new AnimateModal msg
