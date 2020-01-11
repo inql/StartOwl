@@ -271,7 +271,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "Start Owl"
     , body =
-        [ Grid.container []
+        [ div []
             [ addNavbar model
             , div [ class "text-center" ]
                 [ List.range 1 4
