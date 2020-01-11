@@ -1,6 +1,7 @@
 # StartOwl
 ![](https://github.com/inql/StartOwl/workflows/Scala%20API%20Test/badge.svg)
 ![](https://github.com/inql/StartOwl/workflows/Perform%20tests%20on%20API%20and%20publish%20Docker%20image%20on%20AWS/badge.svg)
+![](https://github.com/inql/StartOwl/workflows/Deploy%20Frontend%20on%20Github%20Pages/badge.svg)
 
 Project Mateusz Małecki + Dawid Bińkuś
 ## Description
