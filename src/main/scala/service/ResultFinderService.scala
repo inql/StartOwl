@@ -64,6 +64,8 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
 
       def getResultScore: Int = searchMode.score(keywords, entry)
 
+      def pickBestImageFromEnclosures(enclosures: List[SyndEnclosure]): String = enclosures.maxBy(_.getLength).getUrl
+
       def checkImage(uri:String) : String = {
         try{
           val wholeImage = Source.fromURL(uri)
@@ -78,15 +80,14 @@ class ResultFinderService(val domain: Option[String],val keywords: List[String],
         }
       }
 
-      def buildResultWithoutEnclosures(imgUrls: List[String]): ApiSearchResult = {
-        val imagePath = imgTagPattern.findAllIn(entry.getDescription.getValue).toList.map(t => checkImage(imgSrcPattern.findFirstIn(t).getOrElse("Unknown image.")))
-        ApiSearchResult(entry.getUri,entry.getTitle,getDescription,imagePath ::: imgUrls, getDomainName, getPublishedDate, getResultScore)
+      def buildResultWithoutEnclosures(enclosureUrl: String = ""): ApiSearchResult = imgTagPattern.findAllIn(entry.getDescription.getValue).toList.map(t => checkImage(imgSrcPattern.findFirstIn(t).getOrElse("Unknown image"))) match {
+          case Nil => ApiSearchResult(entry.getUri,entry.getTitle,getDescription,enclosureUrl, getDomainName, getPublishedDate, getResultScore)
+          case head :: rest => ApiSearchResult(entry.getUri,entry.getTitle,getDescription,head, getDomainName, getPublishedDate, getResultScore)
       }
 
-      @tailrec
-      def buildResultFromRssEntry(enclosures: List[SyndEnclosure], imgUrls: List[String] = List()): ApiSearchResult = enclosures match {
-        case Nil => buildResultWithoutEnclosures(imgUrls)
-        case enclosure :: rest => buildResultFromRssEntry(rest, checkImage(enclosure.getUrl) :: imgUrls)
+      def buildResultFromRssEntry(enclosures: List[SyndEnclosure]): ApiSearchResult = enclosures match {
+        case Nil => buildResultWithoutEnclosures()
+        case enclosures: List[SyndEnclosure] => buildResultWithoutEnclosures(pickBestImageFromEnclosures(enclosures))
       }
 
       buildResultFromRssEntry(asScalaBuffer(entry.getEnclosures).toList.sortBy(_.getLength).reverse)
