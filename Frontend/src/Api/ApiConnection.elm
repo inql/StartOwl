@@ -8,7 +8,7 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8002/searchrequest/"
+    "http://localhost:8001/searchrequest/"
 
 
 preparePostJsonForCategory : List String -> List String -> Encode.Value
@@ -31,4 +31,4 @@ decodeRecord =
         (field "uri" string)
         (field "title" string)
         (field "description" string)
-        (field "imageUrl" (list string))
+        (field "imageUrl" string)

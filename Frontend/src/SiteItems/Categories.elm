@@ -186,13 +186,7 @@ displayRecord record =
             ]
         |> Card.imgTop
             [ src
-                (case List.head record.img of
-                    Just i ->
-                        i
-
-                    Nothing ->
-                        ""
-                )
+                record.img
             ]
             []
         |> Card.block []
