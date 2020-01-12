@@ -178,7 +178,7 @@ update msg model =
                                 ]
 
                         _ ->
-                            Cmd.none
+                            Cmd.map UpdateItems givenCommand
             in
             ( { model | items = { updatedItems | shouldUpdate = False } }
             , cmds
