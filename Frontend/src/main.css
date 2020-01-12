@@ -72,6 +72,10 @@ img {
   color: black;
 }
 
+.navbar-bg {
+  background-color : rgba(34,58,40, 0.5) !important;
+}
+
 .img-wrap {
   display: block;
   margin-left: auto;

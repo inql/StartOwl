@@ -345,6 +345,8 @@ addNavbar : Model -> Html Msg
 addNavbar model =
     Navbar.config NavbarMsg
         |> Navbar.withAnimation
+        |> Navbar.attrs [class "navbar-bg"]
+        |> Navbar.fixTop
         |> Navbar.secondary
         |> Navbar.brand [ style "padding" "0", style "margin" "0" ]
             [ img [ src "assets/nav_img.png", style "padding" "0", style "margin" "0", style "height" "40px" ] []
