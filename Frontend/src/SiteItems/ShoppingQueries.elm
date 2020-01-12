@@ -63,7 +63,7 @@ init id pMin pMax tags =
                 False
     in
     ( myModel
-    , Cmd.none
+    , loadResults myModel
     )
 
 
@@ -161,13 +161,13 @@ view model =
                         [ Block.custom <|
                             (Carousel.config CarouselMsg []
                                 |> Carousel.withControls
+                                |> Carousel.withIndicators
                                 |> (Carousel.slides <|
                                         (model.results |> List.map (\x -> displayRecord x))
                                    )
                                 |> Carousel.view model.carouselState
                             )
                         , Block.text [] [ text ("W zakresie " ++ (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax) ++ " zł") ]
-                        , Block.text [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
                         ]
                     ]
                 }
@@ -175,17 +175,18 @@ view model =
         |> Accordion.view model.accordionState
 
 
-displayRecord : QueryResult -> Slide.Config msg
+displayRecord : QueryResult -> Slide.Config Msg
 displayRecord result =
     case result.img of
         "" ->
             Slide.config []
                 (Slide.customContent
                     (Card.config
-                        [ Card.align Text.alignSmCenter
-                        ]
+                        [ Card.align Text.alignSmCenter ]
                         |> Card.block [ Block.align Text.alignSmCenter ]
-                            [ Block.titleH5 [ style "color" "black" ] [ text "No results :(" ] ]
+                            [ Block.titleH5 [ style "color" "black" ] [ text "No results :(" ]
+                            , Block.text [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
+                            ]
                         |> Card.view
                     )
                 )

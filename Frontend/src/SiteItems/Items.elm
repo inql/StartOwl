@@ -356,7 +356,17 @@ decodeShoppingQueries : String -> ( Model, Cmd Msg )
 decodeShoppingQueries jsonString =
     case D.decodeString (D.list decodeShoppingQuery) jsonString of
         Ok val ->
-            ( Model [] [] (val |> List.map (\x -> Tuple.first (SiteItems.ShoppingQueries.init x.id x.priceMin x.priceMax x.tags))) True, Cmd.none )
+            let
+                queriesWCmd =
+                    val |> List.map (\x -> SiteItems.ShoppingQueries.init x.id x.priceMin x.priceMax x.tags)
+
+                queries =
+                    queriesWCmd |> List.map (\x -> Tuple.first x)
+
+                cmds =
+                    queriesWCmd |> List.map (\x -> Cmd.map (ShoppingQueryMsg (Tuple.first x).id) (Tuple.second x))
+            in
+            ( Model [] [] queries True, Cmd.batch <| cmds )
 
         Err _ ->
             ( Model [] [] [] True, Cmd.none )
