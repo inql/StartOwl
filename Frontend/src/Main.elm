@@ -337,6 +337,9 @@ addNavbar model =
     Navbar.config NavbarMsg
         |> Navbar.withAnimation
         |> Navbar.secondary
+        |> Navbar.brand [ style "padding" "0", style "margin" "0" ]
+            [ img [ src "assets/nav_img.png", style "padding" "0", style "margin" "0", style "height" "40px" ] []
+            ]
         |> Navbar.attrs []
         |> (Navbar.items <|
                 ((model.bookmarks |> Bookmarks.BookmarksController.view |> List.map (\x -> Navbar.itemLink [] [ Html.map UpdateBookmark x ]))
