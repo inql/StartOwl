@@ -71,3 +71,11 @@ img {
   font-size: 55px;
   color: black;
 }
+
+.img-wrap {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+}

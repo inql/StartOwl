@@ -17,7 +17,7 @@ if (storedName != null){
 var storedUrls = localStorage.getItem(urlKey)
 if (storedUrls == null)
 {
-    storedUrls = ["www.polsatnews.pl", "www.tvn24.pl"]
+    storedUrls = ["www.polsatnews.pl"]
 } else {
     storedUrls = storedUrls.split(",");
 }

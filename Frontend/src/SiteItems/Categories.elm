@@ -191,7 +191,7 @@ displayRecord : Record -> Card.Config Msg
 displayRecord record =
     Card.config [ Card.outlineSecondary ]
         |> Card.imgTop
-            [ src record.img ]
+            [ src record.img, class "img-wrap" ]
             []
         |> Card.header [ class "text-align" ]
             [ text record.title
