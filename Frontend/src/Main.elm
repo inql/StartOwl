@@ -312,7 +312,7 @@ view model =
         [ div []
             [ addNavbar model
             , div [ class "text-center" ]
-                [ List.range 1 4
+                [ List.range 1 2
                     |> List.map (\_ -> br [] [])
                     |> div []
                 , img [ src "assets/logo.png" ] []

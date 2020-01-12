@@ -132,6 +132,11 @@ decodeRecord =
         (D.field "uri" D.string)
 
 
+getTitle : ShoppingQuery -> String
+getTitle model =
+    String.join " " model.tags
+
+
 view : ShoppingQuery -> Html Msg
 view model =
     Accordion.config AccordionMsg
@@ -143,7 +148,7 @@ view model =
                 , header =
                     Accordion.header [] <|
                         Accordion.toggle [ class "accordion-custom" ]
-                            [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax)
+                            [ text (getTitle model)
                             , case model.editMode of
                                 True ->
                                     Button.button [ Button.danger, Button.small, Button.attrs [ onClick RemoveItem, class "delete_button" ] ] [ Icons.deleteIcon ]
@@ -161,6 +166,7 @@ view model =
                                    )
                                 |> Carousel.view model.carouselState
                             )
+                        , Block.text [] [ text ("W zakresie " ++ (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax) ++ " zł") ]
                         , Block.text [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
                         ]
                     ]

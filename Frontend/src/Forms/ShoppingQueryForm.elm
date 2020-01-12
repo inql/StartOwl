@@ -77,9 +77,10 @@ updateTags msg updateConf model toOuterMsg =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ placeholder "price minimum", value (String.fromInt model.priceMin), onInput UpdatePriceMin ] []
+        [ text "From "
+        , input [ placeholder "price minimum", value (String.fromInt model.priceMin), onInput UpdatePriceMin ] []
+        , text " To "
         , input [ placeholder "price maximum", value (String.fromInt model.priceMax), onInput UpdatePriceMax ] []
-        , br [] []
         , viewTags model
         , br [] []
         , Button.button

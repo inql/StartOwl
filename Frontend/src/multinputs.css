@@ -46,7 +46,8 @@ li.multi-input-token {
     overflow: hidden;
     margin: 0.2em 0.1em;
     padding: 0.1em 0.5em;
-    background-color: greenyellow;
+    background-color: #6c757d;
+    color: white;
     cursor: default;
     border-radius: 15px;
     float: left;
