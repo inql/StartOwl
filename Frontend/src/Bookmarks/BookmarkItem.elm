@@ -57,7 +57,7 @@ view model =
             div []
                 [ input [ placeholder "name", value model.name, onInput UpdateName ] []
                 , br [] []
-                , input [ placeholder "url", value model.url, onInput UpdateUrl ] []
+                , input [ placeholder "format www.example.com", value model.url, onInput UpdateUrl ] []
                 , br [] []
                 , Button.button [ Button.danger, Button.small, Button.attrs [ onClick Remove ] ] [ Icons.deleteIcon ]
                 ]
