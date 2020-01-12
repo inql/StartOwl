@@ -39,7 +39,13 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         BookmarkMsg id m ->
-            { model | bookmarks = model.bookmarks |> List.filter (\x -> x.id == id) |> List.map (\x -> Bookmarks.BookmarkItem.update m x) }
+            { model
+                | bookmarks =
+                    model.bookmarks
+                        |> List.filter (\x -> x.id == id)
+                        |> List.map (\x -> Bookmarks.BookmarkItem.update m x)
+                        |> List.filter (\x -> x.id > 0)
+            }
 
 
 toggleEditForBookmarks : Bool -> Model -> Model

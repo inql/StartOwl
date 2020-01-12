@@ -54,6 +54,16 @@ errorToString error =
             errorMessage
 
 
+addPrefixToUrl : String -> String
+addPrefixToUrl url =
+    "http://" ++ url
+
+
+addPrefixToUrls : List String -> List String
+addPrefixToUrls urls =
+    urls |> List.map addPrefixToUrl
+
+
 matches : String -> String -> Bool
 matches regex =
     let

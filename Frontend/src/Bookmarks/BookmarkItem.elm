@@ -2,9 +2,11 @@ module Bookmarks.BookmarkItem exposing (..)
 
 import Bootstrap.Button as Button
 import Bootstrap.Navbar as Navbar
+import Helpers exposing (addPrefixToUrl)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import IconManager as Icons
 
 
 type alias Model =
@@ -22,6 +24,7 @@ type alias Bookmark =
 type Msg
     = UpdateName String
     | UpdateUrl String
+    | Remove
 
 
 init : Int -> String -> String -> Model
@@ -38,12 +41,15 @@ update msg model =
         UpdateUrl newUrl ->
             { model | url = newUrl }
 
+        Remove ->
+            { model | id = -1 }
+
 
 view : Model -> Html Msg
 view model =
     case model.editMode of
         False ->
-            a [ href model.url ]
+            a [ href (addPrefixToUrl model.url) ]
                 [ Button.button [ Button.dark ] [ text model.name ]
                 ]
 
@@ -52,4 +58,6 @@ view model =
                 [ input [ placeholder "name", value model.name, onInput UpdateName ] []
                 , br [] []
                 , input [ placeholder "url", value model.url, onInput UpdateUrl ] []
+                , br [] []
+                , Button.button [ Button.danger, Button.small, Button.attrs [ onClick Remove ] ] [ Icons.deleteIcon ]
                 ]

@@ -121,14 +121,9 @@ loadResults : List String -> Model -> Cmd Msg
 loadResults urls model =
     Http.post
         { url = api_url
-        , body = Http.jsonBody (preparePostJsonForCategory model.tags (addPrefixToUrl urls))
+        , body = Http.jsonBody (preparePostJsonForCategory model.tags (addPrefixToUrls urls))
         , expect = Http.expectJson GotResult recordsDecoder
         }
-
-
-addPrefixToUrl : List String -> List String
-addPrefixToUrl urls =
-    urls |> List.map (\x -> "http://" ++ x)
 
 
 view : Model -> Html Msg

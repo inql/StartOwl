@@ -8,7 +8,7 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://localhost:8002/searchrequest/"
+    "http://ec2-18-188-180-112.us-east-2.compute.amazonaws.com:8001/searchrequest/"
 
 
 query_url : String
