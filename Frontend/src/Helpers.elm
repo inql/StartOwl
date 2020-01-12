@@ -1,6 +1,8 @@
 module Helpers exposing (..)
 
 import Dict exposing (Dict)
+import FormatNumber exposing (format)
+import FormatNumber.Locales exposing (usLocale)
 import Http exposing (..)
 import Regex exposing (Regex)
 import Time
@@ -77,3 +79,19 @@ matches regex =
 defaultSeparators : List String
 defaultSeparators =
     [ "\n", "\t", " ", "," ]
+
+
+floatToMoney : Float -> String
+floatToMoney num =
+    format
+        { decimals = 2
+        , thousandSeparator = "."
+        , decimalSeparator = ","
+        , negativePrefix = "−"
+        , negativeSuffix = ""
+        , positivePrefix = ""
+        , positiveSuffix = ""
+        , zeroPrefix = ""
+        , zeroSuffix = ""
+        }
+        num

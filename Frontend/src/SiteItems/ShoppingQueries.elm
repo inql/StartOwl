@@ -104,8 +104,8 @@ update msg model =
             ( { model | id = -1 }, Cmd.none )
 
 
-updateEditModeSq :Bool -> ShoppingQuery ->  ShoppingQuery
-updateEditModeSq value model  =
+updateEditModeSq : Bool -> ShoppingQuery -> ShoppingQuery
+updateEditModeSq value model =
     { model | editMode = value }
 
 
@@ -142,7 +142,7 @@ view model =
                 , options = []
                 , header =
                     Accordion.header [] <|
-                        Accordion.toggle []
+                        Accordion.toggle [ class "accordion-custom" ]
                             [ text (String.fromInt model.priceMin ++ " - " ++ String.fromInt model.priceMax)
                             , case model.editMode of
                                 True ->
@@ -161,7 +161,7 @@ view model =
                                    )
                                 |> Carousel.view model.carouselState
                             )
-                        , Block.text [] [ button [ onClick LoadItems ] [ text "Load" ] ]
+                        , Block.text [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
                         ]
                     ]
                 }
@@ -194,7 +194,7 @@ displayRecord result =
                             []
                         |> Card.block [ Block.align Text.alignSmCenter ]
                             [ Block.titleH5 [ style "color" "black" ] [ text result.name, setSlideClickable result.link ]
-                            , Block.text [ style "color" "gray" ] [ text (String.fromFloat result.price |> String.padRight 2 '0') ]
+                            , Block.text [ style "color" "gray" ] [ text (Helpers.floatToMoney result.price) ]
                             ]
                         |> Card.view
                     )

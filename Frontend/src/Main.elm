@@ -375,7 +375,7 @@ showForm model =
                 , options = []
                 , header =
                     Accordion.header [] <|
-                        Accordion.toggle []
+                        Accordion.toggle [ class "accordion-custom" ]
                             [ text "Add new Form" ]
                 , blocks =
                     [ Accordion.block []

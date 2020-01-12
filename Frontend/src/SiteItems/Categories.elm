@@ -141,7 +141,7 @@ displayCategory category =
                 , options = []
                 , header =
                     Accordion.header [] <|
-                        Accordion.toggle []
+                        Accordion.toggle [ class "accordion-custom" ]
                             [ text category.name
                             , case category.editMode of
                                 True ->
