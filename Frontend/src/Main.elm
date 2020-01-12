@@ -62,7 +62,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
         ( categories, categoriesCmd ) =
             case loadedCategories of
                 Just i ->
-                    SiteItems.Items.decodeCategories i
+                    SiteItems.Items.decodeCategories i urls
 
                 Nothing ->
                     ( SiteItems.Items.Model [] [] [] False, Cmd.none )

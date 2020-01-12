@@ -92,7 +92,7 @@ update msg model =
         GotResult result ->
             case result of
                 Ok r ->
-                    ( { model | results = r, carouselState = Carousel.initialStateWithOptions { defaultStateOptions | interval = Just 2000, pauseOnHover = False } }, Cmd.none )
+                    ( { model | results = r, carouselState = Carousel.initialStateWithOptions { defaultStateOptions | interval = Just 2000, pauseOnHover = True } }, Cmd.none )
 
                 Err _ ->
                     ( { model | results = [ noResultsQuery ] }, Cmd.none )
@@ -134,7 +134,7 @@ decodeRecord =
 
 getTitle : ShoppingQuery -> String
 getTitle model =
-    String.join " " model.tags
+    String.join ", " model.tags
 
 
 view : ShoppingQuery -> Html Msg
@@ -161,7 +161,6 @@ view model =
                         [ Block.custom <|
                             (Carousel.config CarouselMsg []
                                 |> Carousel.withControls
-                                |> Carousel.withIndicators
                                 |> (Carousel.slides <|
                                         (model.results |> List.map (\x -> displayRecord x))
                                    )
@@ -185,7 +184,7 @@ displayRecord result =
                         [ Card.align Text.alignSmCenter ]
                         |> Card.block [ Block.align Text.alignSmCenter ]
                             [ Block.titleH5 [ style "color" "black" ] [ text "No results :(" ]
-                            , Block.text [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
+                            , Block.titleH6 [] [ Button.button [ Button.dark, Button.attrs [ onClick LoadItems ] ] [ text "Load" ] ]
                             ]
                         |> Card.view
                     )

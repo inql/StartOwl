@@ -332,13 +332,13 @@ type alias SimplifiedQuery =
     }
 
 
-decodeCategories : String -> ( Model, Cmd Msg )
-decodeCategories jsonString =
+decodeCategories : String -> List String -> ( Model, Cmd Msg )
+decodeCategories jsonString urls =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
             let
                 tmp =
-                    val |> List.map (\x -> SiteItems.Categories.init x.id x.name x.tags [])
+                    val |> List.map (\x -> SiteItems.Categories.init x.id x.name x.tags urls)
 
                 cats =
                     tmp |> List.map (\x -> Tuple.first x)
