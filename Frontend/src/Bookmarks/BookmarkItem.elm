@@ -54,7 +54,7 @@ view model =
                 ]
 
         _ ->
-            div [ style "overflow" "hidden" ]
+            div []
                 [ input [ placeholder "name", value model.name, onInput UpdateName ] []
                 , br [] []
                 , input [ placeholder "url", value model.url, onInput UpdateUrl ] []

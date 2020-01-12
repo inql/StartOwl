@@ -32,7 +32,18 @@ addEmptyBookmark id value =
 
 getNextId : Model -> Int
 getNextId model =
-    (model.bookmarks |> List.length) + 1
+    (case
+        model.bookmarks
+            |> List.reverse
+            |> List.head
+     of
+        Just item ->
+            item.id
+
+        _ ->
+            1
+    )
+        + 1
 
 
 update : Msg -> Model -> Model
@@ -42,8 +53,15 @@ update msg model =
             { model
                 | bookmarks =
                     model.bookmarks
-                        |> List.filter (\x -> x.id == id)
-                        |> List.map (\x -> Bookmarks.BookmarkItem.update m x)
+                        |> List.map
+                            (\x ->
+                                case x.id == id of
+                                    True ->
+                                        Bookmarks.BookmarkItem.update m x
+
+                                    _ ->
+                                        x
+                            )
                         |> List.filter (\x -> x.id > 0)
             }
 
