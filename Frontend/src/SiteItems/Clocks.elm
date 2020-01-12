@@ -65,9 +65,9 @@ update msg model =
             ( { model | id = -1 }, Cmd.none )
 
 
-updateEditModeClock : Clock -> Clock
-updateEditModeClock model =
-    { model | editMode = model.editMode |> not }
+updateEditModeClock : Bool -> Clock -> Clock
+updateEditModeClock value model =
+    { model | editMode = value }
 
 
 subscriptions : Model -> Sub Msg

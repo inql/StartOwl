@@ -104,9 +104,9 @@ update msg model =
             ( { model | id = -1 }, Cmd.none )
 
 
-updateEditModeSq : ShoppingQuery -> ShoppingQuery
-updateEditModeSq model =
-    { model | editMode = model.editMode |> not }
+updateEditModeSq :Bool -> ShoppingQuery ->  ShoppingQuery
+updateEditModeSq value model  =
+    { model | editMode = value }
 
 
 loadResults : ShoppingQuery -> Cmd Msg

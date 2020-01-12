@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Bookmarks.BookmarksController exposing (..)
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
@@ -31,6 +32,7 @@ import SiteItems.Items exposing (..)
 type alias Model =
     { name : String
     , items : SiteItems.Items.Model
+    , bookmarks : Bookmarks
     , categoryForm : Forms.CategoryForm.Model
     , clockForm : Forms.ClockForm.Model
     , shoppingQueryForm : Forms.ShoppingQueryForm.Model
@@ -53,8 +55,8 @@ main =
         }
 
 
-init : ( ( String, List String ), ( Maybe String, Maybe String, Maybe String ) ) -> ( Model, Cmd Msg )
-init ( ( name, urls ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
+init : ( ( String, List String, Maybe String ), ( Maybe String, Maybe String, Maybe String ) ) -> ( Model, Cmd Msg )
+init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
     let
         ( categories, categoriesCmd ) =
             case loadedCategories of
@@ -99,8 +101,16 @@ init ( ( name, urls ), ( loadedCategories, loadedClocks, loadedQueries ) ) =
 
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
+
+        bkmrks =
+            case bookmarks of
+                Just json ->
+                    decodeBookmarks json
+
+                _ ->
+                    Bookmarks.BookmarksController.Model []
     in
-    ( Model name items form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") navbarState False
+    ( Model name items bkmrks form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") navbarState False
     , Cmd.batch
         [ Cmd.map UpdateItems categoriesCmd
         , Cmd.map CategoryFormMsg formCmd
@@ -119,6 +129,7 @@ type ModalMsg
 
 type Msg
     = UpdateItems SiteItems.Items.Msg
+    | UpdateBookmark Bookmarks.BookmarksController.Msg
     | CategoryFormMsg Forms.CategoryForm.Msg
     | ClockFormMsg Forms.ClockForm.Msg
     | ShoppingQueryFormMsg Forms.ShoppingQueryForm.Msg
@@ -129,6 +140,7 @@ type Msg
     | AnimateModal Modal.Visibility
     | ToggleEditMode
     | NavbarMsg Navbar.State
+    | NewBookmark
 
 
 subscriptions : Model -> Sub Msg
@@ -159,6 +171,13 @@ update msg model =
                 , storeShoppingQueries (encodeShoppingQueries updatedItems)
                 ]
             )
+
+        UpdateBookmark m ->
+            let
+                updatedBookmarks =
+                    Bookmarks.BookmarksController.update m model.bookmarks
+            in
+            ( { model | bookmarks = updatedBookmarks }, storeBookmarks (encodeBookmarks updatedBookmarks) )
 
         CategoryFormMsg m ->
             let
@@ -247,10 +266,23 @@ update msg model =
             ( { newModel | urls = newUrls }, Cmd.batch [ newCmd, storeUrls model.urls ] )
 
         ToggleEditMode ->
-            ( { model | items = toggleEditMode model.items }, Cmd.none )
+            let
+                toggledEditMode =
+                    model.editMode |> not
+            in
+            ( { model
+                | editMode = toggledEditMode
+                , items = toggleEditMode toggledEditMode model.items
+                , bookmarks = toggleEditForBookmarks toggledEditMode model.bookmarks
+              }
+            , Cmd.none
+            )
 
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
+
+        NewBookmark ->
+            ( { model | bookmarks = addNewBookmark model.editMode model.bookmarks }, Cmd.none )
 
 
 updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
@@ -299,8 +331,11 @@ addNavbar model =
         |> Navbar.withAnimation
         |> Navbar.fixTop
         |> Navbar.primary
-        |> Navbar.items
-            []
+        |> (Navbar.items <|
+                ((model.bookmarks |> Bookmarks.BookmarksController.view |> List.map (\x -> Navbar.itemLink [] [ Html.map UpdateBookmark x ]))
+                    ++ [ Navbar.itemLink [] [ Button.button [ Button.dark, Button.attrs [ onClick <| NewBookmark ] ] [ text "+" ] ] ]
+                )
+           )
         |> Navbar.customItems
             [ Navbar.textItem []
                 [ Button.button

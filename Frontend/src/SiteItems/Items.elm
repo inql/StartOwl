@@ -178,12 +178,12 @@ update msg model =
             )
 
 
-toggleEditMode : Model -> Model
-toggleEditMode model =
+toggleEditMode : Bool -> Model -> Model
+toggleEditMode value model =
     { model
-        | categories = model.categories |> List.map updateEditModeCat
-        , clocks = model.clocks |> List.map updateEditModeClock
-        , shoppingQueries = model.shoppingQueries |> List.map updateEditModeSq
+        | categories = model.categories |> List.map (updateEditModeCat value)
+        , clocks = model.clocks |> List.map (updateEditModeClock value)
+        , shoppingQueries = model.shoppingQueries |> List.map (updateEditModeSq value)
     }
 
 

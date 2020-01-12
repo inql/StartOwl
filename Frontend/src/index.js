@@ -2,6 +2,8 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
+
+const bkmKey = "save-bookmarks";
 const catKey = "saved-categories";
 const clocksKey = "saved-clocks";
 const urlKey = "saved-urls";
@@ -20,12 +22,12 @@ if (storedUrls == null)
     storedUrls = storedUrls.split(",");
 }
 
-
+var storedBkms = localStorage.getItem(bkmKey);
 
 var storedQueries = localStorage.getItem(queriesKey);
 var storedCats = localStorage.getItem(catKey);
 var storedClocks = localStorage.getItem(clocksKey);
-var flags = [[startName, storedUrls], [storedCats, storedClocks, storedQueries]];
+var flags = [[startName, storedUrls, storedBkms], [storedCats, storedClocks, storedQueries]];
 
 const app = Elm.Main.init({
   node: document.getElementById('root'),
@@ -55,6 +57,10 @@ app.ports.storeClocks.subscribe(function(data)
 
 app.ports.storeShoppingQueries.subscribe(function(data){
     localStorage.setItem(queriesKey, JSON.stringify(data));
+});
+
+app.ports.storeBookmarks.subscribe(function(data){
+    localStorage.setItem(bkmKey, JSON.stringify(data));
 });
 
 app.ports.storeUrls.subscribe(function(data)

@@ -112,11 +112,9 @@ update msg model =
             ( { model | accordionState = state }, Cmd.none )
 
 
-updateEditModeCat : Category -> Category
-
-
-updateEditModeCat cat =
-    { cat | editMode = cat.editMode |> not }
+updateEditModeCat : Bool -> Category -> Category
+updateEditModeCat value cat =
+    { cat | editMode = value }
 
 
 loadResults : List String -> Model -> Cmd Msg
