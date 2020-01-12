@@ -65,7 +65,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
                     SiteItems.Items.decodeCategories i
 
                 Nothing ->
-                    ( SiteItems.Items.Model [] [] [], Cmd.none )
+                    ( SiteItems.Items.Model [] [] [] False, Cmd.none )
 
         ( clocks, clockCmd ) =
             case loadedClocks of
@@ -73,7 +73,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
                     SiteItems.Items.decodeClocks i
 
                 Nothing ->
-                    ( SiteItems.Items.Model [] [] [], Cmd.none )
+                    ( SiteItems.Items.Model [] [] [] False, Cmd.none )
 
         ( queries, queriesCmd ) =
             case loadedQueries of
@@ -81,7 +81,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
                     SiteItems.Items.decodeShoppingQueries i
 
                 Nothing ->
-                    ( SiteItems.Items.Model [] [] [], Cmd.none )
+                    ( SiteItems.Items.Model [] [] [] False, Cmd.none )
 
         ( form, formCmd ) =
             Forms.CategoryForm.init
@@ -99,6 +99,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
                 )
                 clocks.clocks
                 queries.shoppingQueries
+                True
 
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
@@ -165,14 +166,22 @@ update msg model =
             let
                 ( updatedItems, givenCommand ) =
                     SiteItems.Items.update m model.items
+
+                cmds =
+                    case updatedItems.shouldUpdate of
+                        True ->
+                            Cmd.batch
+                                [ Cmd.map UpdateItems givenCommand
+                                , storeCategories (encodeCategories updatedItems)
+                                , storeClocks (encodeClocks updatedItems)
+                                , storeShoppingQueries (encodeShoppingQueries updatedItems)
+                                ]
+
+                        _ ->
+                            Cmd.none
             in
-            ( { model | items = updatedItems }
-            , Cmd.batch
-                [ Cmd.map UpdateItems givenCommand
-                , storeCategories (encodeCategories updatedItems)
-                , storeClocks (encodeClocks updatedItems)
-                , storeShoppingQueries (encodeShoppingQueries updatedItems)
-                ]
+            ( { model | items = { updatedItems | shouldUpdate = False } }
+            , cmds
             )
 
         UpdateBookmark m ->
@@ -191,10 +200,10 @@ update msg model =
                     case possibleNewCommand of
                         Just cat ->
                             let
-                                newItems =
+                                ( newItems, newCm ) =
                                     addNewCategory cat.title cat.tags model.urls model.items
                             in
-                            ( newItems, storeCategories (encodeCategories newItems) )
+                            ( newItems, Cmd.batch [ storeCategories (encodeCategories newItems), Cmd.map UpdateItems newCm ] )
 
                         Nothing ->
                             ( model.items, Cmd.none )

@@ -30,18 +30,8 @@ type alias Model =
     { categories : List Category
     , clocks : List Clock
     , shoppingQueries : List ShoppingQuery
+    , shouldUpdate : Bool
     }
-
-
-init : ( Model, Cmd Msg )
-init =
-    let
-        ( sampleItemCategory, catCmd ) =
-            SiteItems.Categories.init 1
-    in
-    ( Model [] [] []
-    , Cmd.batch [ Cmd.map (CategoryMsg 1) catCmd ]
-    )
 
 
 subscriptions : Model -> Sub Msg
@@ -86,6 +76,9 @@ update msg model =
 
                 ( updatedItem, cmdMsg ) =
                     SiteItems.Categories.update message searchedItem
+
+                newShouldUpdate =
+                    updatedItem.status == SiteItems.Categories.Delete
             in
             ( { model
                 | categories =
@@ -99,13 +92,14 @@ update msg model =
                                     cat
                             )
                         |> List.filter (\x -> x.status /= SiteItems.Categories.Delete)
+                , shouldUpdate = newShouldUpdate
               }
             , Cmd.map (CategoryMsg id) cmdMsg
             )
 
         ClockMsg id message ->
-            ( { model
-                | clocks =
+            let
+                newItems =
                     model.clocks
                         |> List.map
                             (\x ->
@@ -115,7 +109,15 @@ update msg model =
                                 else
                                     x
                             )
+
+                newShouldUpdate =
+                    newItems |> List.any (\x -> x.id < 0)
+            in
+            ( { model
+                | clocks =
+                    newItems
                         |> List.filter (\x -> x.id >= 0)
+                , shouldUpdate = newShouldUpdate
               }
             , Cmd.none
             )
@@ -144,6 +146,9 @@ update msg model =
 
                 ( updatedItem, cmdMsg ) =
                     SiteItems.ShoppingQueries.update message searchedItem
+
+                newShouldUpdate =
+                    updatedItem.id < 0
             in
             ( { model
                 | shoppingQueries =
@@ -157,6 +162,7 @@ update msg model =
                                     x
                             )
                         |> List.filter (\x -> x.id >= 0)
+                , shouldUpdate = newShouldUpdate
               }
             , Cmd.map (ShoppingQueryMsg updatedItem.id) cmdMsg
             )
@@ -197,13 +203,16 @@ getNextId model =
             1
 
 
-addNewCategory : String -> List String -> List String -> Model -> Model
+addNewCategory : String -> List String -> List String -> Model -> ( Model, Cmd Msg )
 addNewCategory name tags urls model =
     let
         id =
             getNextId model
+
+        ( newCat, newCmd ) =
+            SiteItems.Categories.init id name tags urls
     in
-    { model | categories = model.categories ++ [ Category id name tags [] Loading urls (Accordion.initialStateCardOpen (idToStr id)) False ] }
+    ( { model | categories = model.categories ++ [ newCat ] }, Cmd.map (CategoryMsg id) newCmd )
 
 
 addNewClock : String -> Time.Zone -> Model -> ( Model, Cmd Msg )
@@ -327,20 +336,30 @@ decodeCategories : String -> ( Model, Cmd Msg )
 decodeCategories jsonString =
     case D.decodeString (D.list decodeCat) jsonString of
         Ok val ->
-            ( Model (val |> List.map (\x -> Category x.id x.name x.tags [] Loading [] (getOpenAccordion x.id) False)) [] [], Cmd.none )
+            let
+                tmp =
+                    val |> List.map (\x -> SiteItems.Categories.init x.id x.name x.tags [])
+
+                cats =
+                    tmp |> List.map (\x -> Tuple.first x)
+
+                cmds =
+                    tmp |> List.map (\x -> Cmd.map (CategoryMsg (Tuple.first x).id) (Tuple.second x))
+            in
+            ( Model cats [] [] True, Cmd.batch <| cmds )
 
         Err _ ->
-            ( Model [] [] [], Cmd.none )
+            ( Model [] [] [] True, Cmd.none )
 
 
 decodeShoppingQueries : String -> ( Model, Cmd Msg )
 decodeShoppingQueries jsonString =
     case D.decodeString (D.list decodeShoppingQuery) jsonString of
         Ok val ->
-            ( Model [] [] (val |> List.map (\x -> Tuple.first (SiteItems.ShoppingQueries.init x.id x.priceMin x.priceMax x.tags))), Cmd.none )
+            ( Model [] [] (val |> List.map (\x -> Tuple.first (SiteItems.ShoppingQueries.init x.id x.priceMin x.priceMax x.tags))) True, Cmd.none )
 
         Err _ ->
-            ( Model [] [] [], Cmd.none )
+            ( Model [] [] [] True, Cmd.none )
 
 
 decodeClocks : String -> ( Model, Cmd Msg )
@@ -359,10 +378,10 @@ decodeClocks jsonString =
                 cmds =
                     clocksWithCmds |> List.map (\x -> Tuple.second x)
             in
-            ( Model [] clocks [], Cmd.batch cmds )
+            ( Model [] clocks [] True, Cmd.batch cmds )
 
         Err _ ->
-            ( Model [] [] [], Cmd.none )
+            ( Model [] [] [] True, Cmd.none )
 
 
 decodeClock : D.Decoder SimplifiedClock

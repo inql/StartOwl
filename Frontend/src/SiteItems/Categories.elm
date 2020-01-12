@@ -73,9 +73,13 @@ type Msg
     | AccordionMsg Accordion.State
 
 
-init : Int -> ( Category, Cmd Msg )
-init i =
-    ( sampleCategory i, Cmd.none )
+init : Int -> String -> List String -> List String -> ( Category, Cmd Msg )
+init id name tags urls =
+    let
+        model =
+            Category id name tags [] Loading urls (getOpenAccordion id) False
+    in
+    ( model, loadResults model.urls model )
 
 
 subscriptions : Model -> Sub Msg
