@@ -106,8 +106,11 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
         entity = HttpEntity(MediaTypes.`application/json`, jsonRequest)
       )
 
+      val jsonResult = "{\"results\":[]}"
+
       postRequest ~> Route.seal(IncorrectMockRoutes.routes) ~> check {
         status.isSuccess() shouldEqual true
+        responseAs[String] shouldEqual jsonResult
       }
 
     }
@@ -128,6 +131,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
         """.stripMargin)
 
+      val jsonResult = "{\"results\":[]}"
+
       val postRequest = HttpRequest(
         HttpMethods.POST,
         uri = "/searchrequest",
@@ -136,6 +141,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
       postRequest ~> Route.seal(CorrectMockRoutes.routes) ~> check {
         status.isSuccess() shouldEqual true
+        responseAs[String] shouldEqual jsonResult
       }
     }
 
@@ -157,6 +163,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
         """.stripMargin)
 
+    val jsonResult = "{\"results\":[]}"
+
     val postRequest = HttpRequest(
       HttpMethods.POST,
       uri = "/allegrosearch",
@@ -165,6 +173,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
     postRequest ~> Route.seal(EmptyMockRoutes.routes) ~> check {
       status.isSuccess() shouldEqual true
+      responseAs[String] shouldEqual jsonResult
     }
   }
 
@@ -185,6 +194,8 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
         """.stripMargin)
 
+    val jsonResult = "{\"results\":[{\"name\":\"Szafa\",\"lowestPriceDelivery\":10.0,\"currency\":\"PLN\",\"imageUri\":\"https://image.com/url\",\"price\":100.0,\"uri\":\"https://result.com/url\"}]}"
+
     val postRequest = HttpRequest(
       HttpMethods.POST,
       uri = "/allegrosearch",
@@ -193,6 +204,7 @@ class RoutesSpec extends WordSpec with Matchers with ScalatestRouteTest with Bef
 
     postRequest ~> Route.seal(CorrectAllegroRoutes.routes) ~> check {
       status.isSuccess() shouldEqual true
+      responseAs[String] shouldEqual jsonResult
     }
   }
 
