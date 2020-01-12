@@ -152,13 +152,13 @@ displayCategory category =
                             ]
                 , blocks =
                     [ Accordion.block []
-                        [ category.tags |> List.map (\x -> Badge.pillInfo [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
+                        [ category.tags |> List.map (\x -> Badge.badgeSecondary [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
                         , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
                         , Block.link []
                             [ text (statusToString category.status)
                             , br [] []
                             , Button.button
-                                [ Button.primary, Button.attrs [ onClick LoadMoreRecords ] ]
+                                [ Button.dark, Button.attrs [ onClick LoadMoreRecords ] ]
                                 [ text "Load more" ]
                             ]
                         ]

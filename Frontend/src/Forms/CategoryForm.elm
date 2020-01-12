@@ -96,7 +96,7 @@ displayForm model =
         , viewTags model
         , br [] []
         , Button.button
-            [ Button.primary, Button.attrs [ onClick SubmitForm ] ]
+            [ Button.dark, Button.attrs [ onClick SubmitForm ] ]
             [ text "Submit" ]
         ]
 

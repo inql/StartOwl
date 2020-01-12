@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Bookmarks.BookmarksController exposing (..)
+import Bootstrap.Accordion as Accordion
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
-import Bootstrap.CDN as CDN
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
@@ -42,6 +42,7 @@ type alias Model =
     , urls : List String
     , state : MultiInput.State
     , navbarState : Navbar.State
+    , accordionState : Accordion.State
     , editMode : Bool
     }
 
@@ -110,7 +111,7 @@ init ( ( name, urls, bookmarks ), ( loadedCategories, loadedClocks, loadedQuerie
                 _ ->
                     Bookmarks.BookmarksController.Model []
     in
-    ( Model name items bkmrks form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") navbarState False
+    ( Model name items bkmrks form clockForm shoppingQueryForm [] Modal.hidden Tab.initialState urls (MultiInput.init "urls-input") navbarState Accordion.initialState False
     , Cmd.batch
         [ Cmd.map UpdateItems categoriesCmd
         , Cmd.map CategoryFormMsg formCmd
@@ -141,6 +142,7 @@ type Msg
     | ToggleEditMode
     | NavbarMsg Navbar.State
     | NewBookmark
+    | AccordionMsg Accordion.State
 
 
 subscriptions : Model -> Sub Msg
@@ -152,6 +154,7 @@ subscriptions model =
             |> Sub.map MultiInputMsg
         , Modal.subscriptions model.settingsVisibility AnimateModal
         , Navbar.subscriptions model.navbarState NavbarMsg
+        , Accordion.subscriptions model.accordionState AccordionMsg
         ]
 
 
@@ -284,6 +287,9 @@ update msg model =
         NewBookmark ->
             ( { model | bookmarks = addNewBookmark model.editMode model.bookmarks }, Cmd.none )
 
+        AccordionMsg state ->
+            ( { model | accordionState = state }, Cmd.none )
+
 
 updateUrls : MultiInput.Msg -> MultiInput.UpdateConfig -> Model -> (MultiInput.Msg -> Msg) -> ( Model, Cmd Msg )
 updateUrls msg updateConf model toOuterMsg =
@@ -309,6 +315,7 @@ view model =
                 [ List.range 1 4
                     |> List.map (\_ -> br [] [])
                     |> div []
+                , img [ src "assets/logo.png" ] []
                 , div []
                     [ h1 []
                         [ text "Hello"
@@ -317,7 +324,7 @@ view model =
                     ]
                 , br [] []
                 , Html.map UpdateItems (SiteItems.Items.view model.items)
-                , showForm model
+                , Grid.container [] [ showForm model ]
                 , addFooter
                 ]
             ]
@@ -329,8 +336,8 @@ addNavbar : Model -> Html Msg
 addNavbar model =
     Navbar.config NavbarMsg
         |> Navbar.withAnimation
-        |> Navbar.fixTop
-        |> Navbar.primary
+        |> Navbar.secondary
+        |> Navbar.attrs []
         |> (Navbar.items <|
                 ((model.bookmarks |> Bookmarks.BookmarksController.view |> List.map (\x -> Navbar.itemLink [] [ Html.map UpdateBookmark x ]))
                     ++ [ Navbar.itemLink [] [ Button.button [ Button.dark, Button.attrs [ onClick <| NewBookmark ] ] [ text "+" ] ] ]
@@ -340,9 +347,10 @@ addNavbar model =
             [ Navbar.textItem []
                 [ Button.button
                     [ Button.dark
+                    , Button.small
                     , Button.attrs [ onClick <| ToggleEditMode ]
                     ]
-                    [ text "Edit mode" ]
+                    [ Icons.editModeIcon ]
                 ]
             , Navbar.textItem [] [ showSettings model ]
             ]
@@ -359,37 +367,53 @@ addFooter =
 
 showForm : Model -> Html Msg
 showForm model =
-    Grid.container []
-        [ Tab.config TabMsg
-            |> Tab.pills
-            |> Tab.items
-                [ Tab.item
-                    { id = "tabItem1"
-                    , link = Tab.link [] [ text "Add new Category" ]
-                    , pane =
-                        Tab.pane [ Spacing.mt3 ]
-                            [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
-                            ]
-                    }
-                , Tab.item
-                    { id = "tabItem2"
-                    , link = Tab.link [] [ text "Add new Clock" ]
-                    , pane =
-                        Tab.pane [ Spacing.mt3 ]
-                            [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
-                            ]
-                    }
-                , Tab.item
-                    { id = "tabItem3"
-                    , link = Tab.link [] [ text "Add new shopping query" ]
-                    , pane =
-                        Tab.pane [ Spacing.mt3 ]
-                            [ Html.map ShoppingQueryFormMsg (Forms.ShoppingQueryForm.view model.shoppingQueryForm)
-                            ]
-                    }
-                ]
-            |> Tab.view model.tabState
-        ]
+    Accordion.config AccordionMsg
+        |> Accordion.withAnimation
+        |> Accordion.cards
+            [ Accordion.card
+                { id = "forms"
+                , options = []
+                , header =
+                    Accordion.header [] <|
+                        Accordion.toggle []
+                            [ text "Add new Form" ]
+                , blocks =
+                    [ Accordion.block []
+                        [ Block.custom <|
+                            (Tab.config TabMsg
+                                |> Tab.items
+                                    [ Tab.item
+                                        { id = "tabItem1"
+                                        , link = Tab.link [] [ text "Add new Category" ]
+                                        , pane =
+                                            Tab.pane [ Spacing.mt3 ]
+                                                [ Html.map CategoryFormMsg (Forms.CategoryForm.view model.categoryForm)
+                                                ]
+                                        }
+                                    , Tab.item
+                                        { id = "tabItem2"
+                                        , link = Tab.link [] [ text "Add new Clock" ]
+                                        , pane =
+                                            Tab.pane [ Spacing.mt3 ]
+                                                [ Html.map ClockFormMsg (Forms.ClockForm.view model.clockForm)
+                                                ]
+                                        }
+                                    , Tab.item
+                                        { id = "tabItem3"
+                                        , link = Tab.link [] [ text "Add new shopping query" ]
+                                        , pane =
+                                            Tab.pane [ Spacing.mt3 ]
+                                                [ Html.map ShoppingQueryFormMsg (Forms.ShoppingQueryForm.view model.shoppingQueryForm)
+                                                ]
+                                        }
+                                    ]
+                                |> Tab.view model.tabState
+                            )
+                        ]
+                    ]
+                }
+            ]
+        |> Accordion.view model.accordionState
 
 
 showSettings : Model -> Html Msg
@@ -399,9 +423,9 @@ showSettings model =
             [ Button.small, Button.dark, Button.attrs [ onClick <| SettingsMsg ShowModal ] ]
             [ Icons.settingsIcon ]
         , Modal.config (SettingsMsg CloseModal)
-            -- Configure the modal to use animations providing the new AnimateModal msg
             |> Modal.withAnimation AnimateModal
             |> Modal.large
+            |> Modal.attrs [ style "color" "black" ]
             |> Modal.h1 [] [ text "Settings" ]
             |> Modal.body []
                 [ text "Your name "

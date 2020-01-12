@@ -84,7 +84,7 @@ view model =
         , br [] []
         , Button.button
             [ Button.dark, Button.attrs [ onClick SubmitForm ] ]
-            []
+            [ text "Sumbit" ]
         ]
 
 

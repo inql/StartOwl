@@ -14,3 +14,9 @@ settingsIcon : Html msg
 settingsIcon =
     FeatherIcons.settings
         |> FeatherIcons.toHtml []
+
+
+editModeIcon : Html msg
+editModeIcon =
+    FeatherIcons.delete
+        |> FeatherIcons.toHtml []
