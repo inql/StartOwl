@@ -1,7 +1,7 @@
 {
   "main.css": "/StartOwl/static/css/main.7c7c5963.chunk.css",
-  "main.js": "/StartOwl/static/js/main.d29dabae.chunk.js",
-  "main.js.map": "/StartOwl/static/js/main.d29dabae.chunk.js.map",
+  "main.js": "/StartOwl/static/js/main.f584740d.chunk.js",
+  "main.js.map": "/StartOwl/static/js/main.f584740d.chunk.js.map",
   "runtime~main.js": "/StartOwl/static/js/runtime~main.6b267279.js",
   "runtime~main.js.map": "/StartOwl/static/js/runtime~main.6b267279.js.map",
   "vendors~main.js": "/StartOwl/static/js/vendors~main.3ca81432.chunk.js",
@@ -9,8 +9,9 @@
   "./service-worker.js": "/StartOwl/./service-worker.js",
   "assets/bg.png": "/StartOwl/assets/bg.png",
   "assets/logo.png": "/StartOwl/assets/logo.png",
+  "assets/nav_img.png": "/StartOwl/assets/nav_img.png",
   "favicon.ico": "/StartOwl/favicon.ico",
   "index.html": "/StartOwl/index.html",
   "manifest.json": "/StartOwl/manifest.json",
-  "precache-manifest.d0fa770fc600ab1666adb247c4d89b59.js": "/StartOwl/precache-manifest.d0fa770fc600ab1666adb247c4d89b59.js"
+  "precache-manifest.33cd9976e3be7b8da7258e31387d2128.js": "/StartOwl/precache-manifest.33cd9976e3be7b8da7258e31387d2128.js"
 }

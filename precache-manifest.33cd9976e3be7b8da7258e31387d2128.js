@@ -8,11 +8,15 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/StartOwl/assets/logo.png"
   },
   {
+    "revision": "04f6307cfd447790f4b3b46b24346402",
+    "url": "/StartOwl/assets/nav_img.png"
+  },
+  {
     "revision": "fc2bf250fbc0cc312faed621b4897c92",
     "url": "/StartOwl/favicon.ico"
   },
   {
-    "revision": "a42b6fcf138bd6118d312af6a1479c57",
+    "revision": "7c283004960e43e9fe00ebe78d8c697d",
     "url": "/StartOwl/index.html"
   },
   {
@@ -20,12 +24,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/StartOwl/manifest.json"
   },
   {
-    "revision": "d29dabae1a98a2f899a2",
+    "revision": "f584740dceb1d5f6cba8",
     "url": "/StartOwl/static/css/main.7c7c5963.chunk.css"
   },
   {
-    "revision": "d29dabae1a98a2f899a2",
-    "url": "/StartOwl/static/js/main.d29dabae.chunk.js"
+    "revision": "f584740dceb1d5f6cba8",
+    "url": "/StartOwl/static/js/main.f584740d.chunk.js"
   },
   {
     "revision": "6b267279f787e4b88186",
