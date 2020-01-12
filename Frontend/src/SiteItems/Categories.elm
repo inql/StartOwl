@@ -4,11 +4,11 @@ import Api.ApiConnection exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
-import Bootstrap.CDN as CDN
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.General.HAlign as HAlign
 import Bootstrap.Grid as Grid
+import Bootstrap.Spinner as Spinner
 import Bootstrap.Text as Text
 import Bootstrap.Utilities.Spacing as Spacing
 import Browser
@@ -158,13 +158,17 @@ displayCategory category =
                     [ Accordion.block []
                         [ category.tags |> List.map (\x -> Badge.badgeSecondary [ Spacing.ml1 ] [ text x ]) |> Block.titleH2 []
                         , Block.custom <| (category.records |> split recordsInRow |> List.map (\x -> Card.deck (listOfRecords x)) |> div [])
-                        , Block.link []
-                            [ text (statusToString category.status)
-                            , br [] []
-                            , Button.button
-                                [ Button.dark, Button.attrs [ onClick LoadMoreRecords ] ]
-                                [ text "Load more" ]
-                            ]
+                        , Block.custom <|
+                            div []
+                                [ statusToHtml category.status
+                                , br [] []
+                                , case category.status of
+                                    Loading ->
+                                        text ""
+
+                                    _ ->
+                                        Button.button [ Button.dark, Button.attrs [ onClick LoadMoreRecords ] ] [ text "Load more" ]
+                                ]
                         ]
                     ]
                 }
@@ -217,23 +221,25 @@ setCardClickable url =
         []
 
 
-statusToString : Status -> String
-statusToString status =
-    case status of
-        Loading ->
-            "Loading"
+statusToHtml : Status -> Html msg
+statusToHtml status =
+    Badge.badgeDark [ Spacing.ml1 ]
+        [ case status of
+            Loading ->
+                text "Loading"
 
-        Error err ->
-            Helpers.errorToString err
+            Error err ->
+                text (Helpers.errorToString err)
 
-        Good ->
-            "Good"
+            Good ->
+                text "Good"
 
-        NoMoreResults ->
-            "No new results"
+            NoMoreResults ->
+                text "No new results"
 
-        Delete ->
-            "Removing ..."
+            Delete ->
+                text "Removing ..."
+        ]
 
 
 encodeCategory : Category -> E.Value
