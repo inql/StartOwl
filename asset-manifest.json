@@ -1,7 +1,7 @@
 {
   "main.css": "/StartOwl/static/css/main.861a5385.chunk.css",
-  "main.js": "/StartOwl/static/js/main.b0ca36fc.chunk.js",
-  "main.js.map": "/StartOwl/static/js/main.b0ca36fc.chunk.js.map",
+  "main.js": "/StartOwl/static/js/main.bf728a7e.chunk.js",
+  "main.js.map": "/StartOwl/static/js/main.bf728a7e.chunk.js.map",
   "runtime~main.js": "/StartOwl/static/js/runtime~main.6b267279.js",
   "runtime~main.js.map": "/StartOwl/static/js/runtime~main.6b267279.js.map",
   "vendors~main.js": "/StartOwl/static/js/vendors~main.3ca81432.chunk.js",
@@ -13,5 +13,5 @@
   "favicon.ico": "/StartOwl/favicon.ico",
   "index.html": "/StartOwl/index.html",
   "manifest.json": "/StartOwl/manifest.json",
-  "precache-manifest.210682fcd439a659357f5fb3e8bb9928.js": "/StartOwl/precache-manifest.210682fcd439a659357f5fb3e8bb9928.js"
+  "precache-manifest.2157a507fb7ffec18e10129ba1ff2cb0.js": "/StartOwl/precache-manifest.2157a507fb7ffec18e10129ba1ff2cb0.js"
 }
