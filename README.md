@@ -31,10 +31,9 @@ The StartOwl API is now available on AWS
 
 Available addresses:
 
-- [ec2-18-188-180-112.us-east-2.compute.amazonaws.com](http://ec2-18-188-180-112.us-east-2.compute.amazonaws.com)
-- [ec2-18-218-131-2.us-east-2.compute.amazonaws.com](http://ec2-18-218-131-2.us-east-2.compute.amazonaws.com)
-- [ec2-13-58-4-133.us-east-2.compute.amazonaws.com](http://ec2-13-58-4-133.us-east-2.compute.amazonaws.com)
-- [ec2-18-220-25-17.us-east-2.compute.amazonaws.com](http://ec2-18-220-25-17.us-east-2.compute.amazonaws.com)
+zzz
+
+azure in progress
 
 Link to docker:
 
