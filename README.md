@@ -27,13 +27,11 @@ Example using curl
 $ curl -d '{"domains":"[path_to_rss_file]", "keyword":["a"], "searchModeInput":"contains"}' -H "Content-Type: application/json" -X POST http://localhost:8001/searchrequest
 ``
 
-The StartOwl API is now available on AWS
+The StartOwl API is now available on Azure
 
 Available addresses:
 
-zzz
-
-azure in progress
+[https://startowl.azurewebsites.net](https://startowl.azurewebsites.net)
 
 Link to docker:
 

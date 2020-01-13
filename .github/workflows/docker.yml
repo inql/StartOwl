@@ -1,4 +1,4 @@
-name: Perform tests on API and publish Docker image on AWS
+name: Perform tests on API and deploy to Azure
 
 on:
   pull_request:
@@ -31,18 +31,16 @@ jobs:
         env:
           TZ: Europe/Warsaw
         run: sbt docker:publish
-      - name: foo foo ls
-        run: find /home/runner/work -name "task-definition.json"
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Deploy to Amazon ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: azure/webapps-container-deploy@v1
         with:
-          task-definition: task-definition.json
-          service: start-owl-service
-          cluster: my-ecs-cluster
-          wait-for-service-stability: true
+          app-name: 'StartOwl'
+          images: 'index.docker.io/inql/start-owl-api:latest'
+
+      - name: Azure logout
+        run: |
+          az logout

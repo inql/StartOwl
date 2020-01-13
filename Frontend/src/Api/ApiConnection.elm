@@ -8,12 +8,12 @@ import SiteItems.Record exposing (..)
 
 api_url : String
 api_url =
-    "http://ec2-18-188-180-112.us-east-2.compute.amazonaws.com:8001/searchrequest/"
+    "https://startowl.azurewebsites.net/searchrequest/"
 
 
 query_url : String
 query_url =
-    "http://ec2-18-188-180-112.us-east-2.compute.amazonaws.com:8001/allegrosearch/"
+    "https://startowl.azurewebsites.net/allegrosearch/"
 
 
 preparePostJsonForCategory : List String -> List String -> Encode.Value
