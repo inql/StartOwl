@@ -49,7 +49,7 @@ li.multi-input-token {
     background-color: #6c757d;
     color: white;
     cursor: default;
-    border-radius: 15px;
+    /*border-radius: 15px;*/
     float: left;
 }
 
